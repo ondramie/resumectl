@@ -29,7 +29,6 @@ func runList(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Print table header
 	fmt.Printf("%-4s %-20s %-30s %-6s %-10s\n", "ID", "Company", "Title", "Score", "Status")
 	fmt.Println(strings.Repeat("-", 75))
 
@@ -43,7 +42,6 @@ func runList(cmd *cobra.Command, args []string) {
 			company = company[:17] + "..."
 		}
 
-		// Color score
 		scoreStr := fmt.Sprintf("%d", j.Score)
 		if j.Score >= 80 {
 			scoreStr = color.GreenString("%d", j.Score)

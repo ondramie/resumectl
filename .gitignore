@@ -1,6 +1,6 @@
 .env
 .envrc
-resume-tailor
+resumectl
 results/
 jobs/
 .DS_Store

@@ -11,7 +11,6 @@ import (
 
 var db *sql.DB
 
-// Job represents a row in the jobs table
 type Job struct {
 	ID        int
 	URL       string
@@ -23,14 +22,12 @@ type Job struct {
 	UpdatedAt time.Time
 }
 
-// InitDB creates the database and tables if they don't exist
 func InitDB() error {
-	// Create ~/.resume-tailor/ directory
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
-	dataDir := filepath.Join(homeDir, ".resume-tailor")
+	dataDir := filepath.Join(homeDir, ".resumectl")
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return err
 	}
@@ -41,7 +38,6 @@ func InitDB() error {
 		return err
 	}
 
-	// Create tables
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS jobs (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +53,6 @@ func InitDB() error {
 	return err
 }
 
-// SaveJob inserts or updates a job in the database
 func SaveJob(url, company, title string, score int) error {
 	_, err := db.Exec(`
 		INSERT INTO jobs (url, company, title, score, status)
@@ -69,7 +64,6 @@ func SaveJob(url, company, title string, score int) error {
 	return err
 }
 
-// ListJobs returns jobs filtered by status and min score
 func ListJobs(status string, minScore int) ([]Job, error) {
 	query := "SELECT id, url, company, title, score, status, created_at, updated_at FROM jobs WHERE 1=1"
 	args := []interface{}{}

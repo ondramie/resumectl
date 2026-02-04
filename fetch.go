@@ -12,10 +12,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// atsHandler routes a parsed URL to the appropriate fetcher
 type atsHandler func(u *url.URL, pathParts []string) (*JobInfo, error)
 
-// atsRoutes maps hostnames to their handlers
 var atsRoutes = map[string]atsHandler{
 	"boards.greenhouse.io":     handleGreenhouse,
 	"job-boards.greenhouse.io": handleGreenhouse,
@@ -25,11 +23,9 @@ var atsRoutes = map[string]atsHandler{
 }
 
 func handleGreenhouse(u *url.URL, parts []string) (*JobInfo, error) {
-	// Embed URL: /embed/job_app?token=ID
 	if token := u.Query().Get("token"); token != "" {
 		return fetchGreenhouseEmbed(token)
 	}
-	// Standard: /{company}/jobs/{id}
 	for i, p := range parts {
 		if p == "jobs" && i+1 < len(parts) && i > 0 {
 			return fetchGreenhouseJob(parts[i-1], parts[i+1])
@@ -39,7 +35,6 @@ func handleGreenhouse(u *url.URL, parts []string) (*JobInfo, error) {
 }
 
 func handleLever(u *url.URL, parts []string) (*JobInfo, error) {
-	// /{company}/{id}
 	if len(parts) >= 2 {
 		return fetchLeverJob(parts[0], parts[1])
 	}
@@ -47,7 +42,6 @@ func handleLever(u *url.URL, parts []string) (*JobInfo, error) {
 }
 
 func handleAshby(u *url.URL, parts []string) (*JobInfo, error) {
-	// /{company}/{id}
 	if len(parts) >= 2 {
 		return fetchAshbyJob(parts[0], parts[1])
 	}
@@ -55,7 +49,6 @@ func handleAshby(u *url.URL, parts []string) (*JobInfo, error) {
 }
 
 func handleRippling(u *url.URL, parts []string) (*JobInfo, error) {
-	// /{company}/jobs/{id}
 	return fetchGenericJob(u.String())
 }
 
@@ -65,7 +58,6 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 		return nil, fmt.Errorf("invalid URL: %v", err)
 	}
 
-	// Split path into non-empty segments
 	var pathParts []string
 	for _, p := range strings.Split(u.Path, "/") {
 		if p != "" {
@@ -73,12 +65,10 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 		}
 	}
 
-	// Route by hostname
 	if handler, ok := atsRoutes[u.Hostname()]; ok {
 		return handler(u, pathParts)
 	}
 
-	// Check for gh_jid param (Greenhouse embedded on company sites)
 	if ghJobID := u.Query().Get("gh_jid"); ghJobID != "" {
 		company := strings.Split(u.Hostname(), ".")[0]
 		fmt.Printf("  Detected Greenhouse job ID, trying API for %s...\n", company)
@@ -87,10 +77,8 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 		}
 	}
 
-	// Fallback to generic HTML scraping
 	job, err := fetchGenericJob(rawURL)
 	if err != nil {
-		// If generic fails (e.g. 403), try Greenhouse API as fallback
 		company := extractCompanyFromURL(rawURL)
 		reqID := extractReqIDFromURL(rawURL)
 		if reqID != "" {
@@ -102,7 +90,6 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 		return nil, err
 	}
 
-	// If generic returned empty/short description, try Greenhouse
 	if len(job.Description) < 100 {
 		company := extractCompanyFromURL(rawURL)
 		reqID := extractReqIDFromURL(rawURL)
@@ -142,13 +129,11 @@ func fetchGreenhouseEmbed(jobID string) (*JobInfo, error) {
 		return nil, err
 	}
 
-	// Extract title from h1
 	title := strings.TrimSpace(doc.Find("h1.app-title").Text())
 	if title == "" {
 		title = strings.TrimSpace(doc.Find("h1").First().Text())
 	}
 
-	// Extract company from "at CompanyName" span
 	companyText := strings.TrimSpace(doc.Find("span.company-name").Text())
 	company := strings.TrimPrefix(companyText, "at ")
 	company = strings.TrimSpace(strings.Split(company, "\n")[0])
@@ -156,7 +141,6 @@ func fetchGreenhouseEmbed(jobID string) (*JobInfo, error) {
 		company = "unknown"
 	}
 
-	// Extract job description from the page body
 	doc.Find("script, style, nav, header, footer, form, .application-form").Remove()
 	var text strings.Builder
 	doc.Find("#content, .job-post, .job__description, body").First().Each(func(i int, s *goquery.Selection) {
@@ -171,12 +155,10 @@ func fetchGreenhouseEmbed(jobID string) (*JobInfo, error) {
 		return nil, fmt.Errorf("could not extract job description from Greenhouse embed")
 	}
 
-	// Truncate if too long
 	if len(content) > 15000 {
 		content = content[:15000]
 	}
 
-	// Sanitize company name for use as directory
 	companySafe := strings.ToLower(strings.ReplaceAll(company, " ", ""))
 
 	return &JobInfo{
@@ -187,7 +169,6 @@ func fetchGreenhouseEmbed(jobID string) (*JobInfo, error) {
 	}, nil
 }
 
-// GreenhouseJob represents the Greenhouse API response
 type GreenhouseJob struct {
 	Title    string `json:"title"`
 	Content  string `json:"content"`
@@ -217,10 +198,8 @@ func fetchGreenhouseJob(company, jobID string) (*JobInfo, error) {
 		return nil, err
 	}
 
-	// Strip HTML from content
 	content := stripHTML(job.Content)
 
-	// Build structured description
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("Title: %s\n", job.Title))
 	sb.WriteString(fmt.Sprintf("Company: %s\n", company))
@@ -240,7 +219,6 @@ func fetchGreenhouseJob(company, jobID string) (*JobInfo, error) {
 	}, nil
 }
 
-// LeverJob represents the Lever API response
 type LeverJob struct {
 	Text       string `json:"text"`
 	Categories struct {
@@ -287,14 +265,12 @@ func fetchLeverJob(company, jobID string) (*JobInfo, error) {
 		sb.WriteString(fmt.Sprintf("Department: %s\n", job.Categories.Department))
 	}
 
-	// Use plain description if available, otherwise strip HTML
 	if job.DescriptionPlain != "" {
 		sb.WriteString(fmt.Sprintf("\n%s\n", job.DescriptionPlain))
 	} else {
 		sb.WriteString(fmt.Sprintf("\n%s\n", stripHTML(job.Description)))
 	}
 
-	// Add lists (requirements, qualifications, etc.)
 	for _, list := range job.Lists {
 		sb.WriteString(fmt.Sprintf("\n%s:\n%s\n", list.Text, stripHTML(list.Content)))
 	}
@@ -308,7 +284,6 @@ func fetchLeverJob(company, jobID string) (*JobInfo, error) {
 }
 
 func fetchAshbyJob(company, jobID string) (*JobInfo, error) {
-	// Try board API first
 	apiURL := fmt.Sprintf("https://api.ashbyhq.com/posting-api/job-board/%s", company)
 	resp, err := http.Get(apiURL)
 	if err == nil && resp.StatusCode == 200 {
@@ -338,7 +313,6 @@ func fetchAshbyJob(company, jobID string) (*JobInfo, error) {
 		resp.Body.Close()
 	}
 
-	// Fallback: scrape the page (Ashby puts full description in meta tag)
 	pageURL := fmt.Sprintf("https://jobs.ashbyhq.com/%s/%s", company, jobID)
 	resp, err = http.Get(pageURL)
 	if err != nil {
@@ -358,7 +332,6 @@ func fetchAshbyJob(company, jobID string) (*JobInfo, error) {
 	title := doc.Find("title").First().Text()
 	title = strings.TrimSpace(title)
 
-	// Ashby puts the full job description in the meta description tag
 	description, _ := doc.Find(`meta[name="description"]`).Attr("content")
 	if description == "" {
 		return nil, fmt.Errorf("could not extract job description from Ashby page")
@@ -396,14 +369,12 @@ func fetchGenericJob(jobURL string) (*JobInfo, error) {
 		return nil, err
 	}
 
-	// Try to extract title
 	title := doc.Find("title").First().Text()
 	if title == "" {
 		title = doc.Find("h1").First().Text()
 	}
 	title = strings.TrimSpace(title)
 
-	// Try JSON-LD structured data first (common on Phenom, Workday, etc.)
 	var content string
 	doc.Find(`script[type="application/ld+json"]`).Each(func(i int, s *goquery.Selection) {
 		if content != "" {
@@ -415,7 +386,6 @@ func fetchGenericJob(jobURL string) (*JobInfo, error) {
 		}
 		if ld["@type"] == "JobPosting" {
 			if desc, ok := ld["description"].(string); ok && len(desc) > 100 {
-				// Strip HTML from description
 				content = stripHTML(desc)
 			}
 			if t, ok := ld["title"].(string); ok && t != "" {
@@ -424,7 +394,6 @@ func fetchGenericJob(jobURL string) (*JobInfo, error) {
 		}
 	})
 
-	// Fallback: extract body text
 	if content == "" {
 		doc.Find("script, style, nav, header, footer").Remove()
 		var text strings.Builder
@@ -434,16 +403,13 @@ func fetchGenericJob(jobURL string) (*JobInfo, error) {
 		content = text.String()
 	}
 
-	// Clean up whitespace
 	content = regexp.MustCompile(`\s+`).ReplaceAllString(content, " ")
 	content = strings.TrimSpace(content)
 
-	// Truncate if too long
 	if len(content) > 15000 {
 		content = content[:15000]
 	}
 
-	// Extract company from URL as fallback
 	company := extractCompanyFromURL(jobURL)
 
 	return &JobInfo{

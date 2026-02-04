@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Global flags for match command
 var (
 	resumePath      string
 	jobFile         string
@@ -17,7 +16,6 @@ var (
 	withCoverLetter bool
 )
 
-// JobInfo holds parsed job posting data
 type JobInfo struct {
 	Company     string
 	Title       string
@@ -25,7 +23,6 @@ type JobInfo struct {
 	Description string
 }
 
-// MatchResult holds the analysis results from Claude
 type MatchResult struct {
 	Score         int      `json:"score"`
 	StrongMatches []string `json:"strong_matches"`
@@ -35,11 +32,10 @@ type MatchResult struct {
 
 func main() {
 	var rootCmd = &cobra.Command{
-		Use:   "resume-tailor",
-		Short: "Match and tailor your resume to job postings",
+		Use:   "resumectl",
+		Short: "Self-custodial job hunting. You own your data.",
 	}
 
-	// match command
 	var matchCmd = &cobra.Command{
 		Use:   "match [job-url]",
 		Short: "Match resume against a job posting URL or file",
@@ -55,7 +51,6 @@ func main() {
 	matchCmd.Flags().BoolVar(&withCoverLetter, "cover-letter", false, "Also generate a cover letter")
 	rootCmd.AddCommand(matchCmd)
 
-	// list command
 	var listCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List saved jobs from database",
@@ -65,7 +60,6 @@ func main() {
 	listCmd.Flags().Int("min-score", 0, "Filter by minimum score")
 	rootCmd.AddCommand(listCmd)
 
-	// pdf command
 	var pdfCmd = &cobra.Command{
 		Use:   "pdf [results-dir]",
 		Short: "Compile resume.tex to PDF using tectonic",

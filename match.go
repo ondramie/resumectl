@@ -17,12 +17,10 @@ import (
 )
 
 func runMatch(cmd *cobra.Command, args []string) {
-	// Initialize database
 	if err := InitDB(); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not init database: %v\n", err)
 	}
 
-	// Load resume
 	resume, err := os.ReadFile(resumePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading resume: %v\n", err)
@@ -31,9 +29,7 @@ func runMatch(cmd *cobra.Command, args []string) {
 
 	var job *JobInfo
 
-	// Check if using file or URL
 	if jobFile != "" {
-		// Load from file
 		fmt.Println("Loading job description from file...")
 		content, err := os.ReadFile(jobFile)
 		if err != nil {
@@ -41,7 +37,6 @@ func runMatch(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		// Use filename for title and reqID
 		baseName := strings.TrimSuffix(filepath.Base(jobFile), filepath.Ext(jobFile))
 		title := strings.ReplaceAll(baseName, "-", " ")
 
@@ -60,7 +55,6 @@ func runMatch(cmd *cobra.Command, args []string) {
 			Description: string(content),
 		}
 	} else if len(args) > 0 {
-		// Fetch from URL
 		fmt.Println("Fetching job description...")
 		job, err = fetchJobDescription(args[0])
 		if err != nil {
@@ -88,32 +82,26 @@ func runMatch(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		// Print iteration results
 		printIterationResult(iteration, result)
 
-		// Track best result
 		if result.Score > bestScore {
 			bestScore = result.Score
 			bestResult = result
 		}
 
-		// Check if we've hit target
 		if result.Score >= targetScore {
 			fmt.Printf("\n%s Target score %d reached!\n", color.GreenString("✓"), targetScore)
 			break
 		}
 
-		// Check if score improved
 		if iteration > 1 && result.Score <= bestScore-5 {
 			fmt.Printf("\n%s Score not improving, stopping.\n", color.YellowString("⚠"))
 			break
 		}
 
-		// Use tailored resume for next iteration
 		currentResume = result.TailoredLatex
 	}
 
-	// Print final results
 	fmt.Println()
 	fmt.Println(color.New(color.Bold, color.Underline).Sprint("Final Results"))
 	fmt.Println(strings.Repeat("═", 50))
@@ -123,7 +111,6 @@ func runMatch(cmd *cobra.Command, args []string) {
 	}
 	printResult(bestResult)
 
-	// Save to database
 	if db != nil {
 		var jobURL string
 		if len(args) > 0 {
@@ -140,25 +127,21 @@ func runMatch(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Create output directory
 	outputDir := generateOutputDir(job)
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating output dir: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Save tailored resume
 	resumeOut := filepath.Join(outputDir, "resume.tex")
 	if err := os.WriteFile(resumeOut, []byte(bestResult.TailoredLatex), 0644); err != nil {
 		fmt.Fprintf(os.Stderr, "Error saving tailored resume: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Save job description
 	jobOut := filepath.Join(outputDir, "job.txt")
 	os.WriteFile(jobOut, []byte(job.Description), 0644)
 
-	// Save report
 	reportOut := filepath.Join(outputDir, "report.txt")
 	report := fmt.Sprintf("Score: %d/100\n\nStrong Matches:\n", bestResult.Score)
 	for _, m := range bestResult.StrongMatches {
@@ -170,7 +153,6 @@ func runMatch(cmd *cobra.Command, args []string) {
 	}
 	os.WriteFile(reportOut, []byte(report), 0644)
 
-	// Cover letter (optional)
 	if withCoverLetter {
 		fmt.Println()
 		fmt.Println(color.New(color.Bold).Sprint("Cover Letter"))
@@ -210,7 +192,7 @@ func runMatch(cmd *cobra.Command, args []string) {
 	}
 	fmt.Println()
 	fmt.Println("To compile PDF (after reviewing/editing resume.tex):")
-	fmt.Printf("  ./resume-tailor pdf %s\n", outputDir)
+	fmt.Printf("  resumectl pdf %s\n", outputDir)
 }
 
 func generateOutputDir(job *JobInfo) string {
@@ -227,7 +209,6 @@ func generateOutputDir(job *JobInfo) string {
 		reqID = sanitize(job.Title)
 	}
 
-	// results/company/req_id/
 	return filepath.Join("results", company, reqID)
 }
 
@@ -306,15 +287,12 @@ Respond with ONLY valid JSON (no markdown):
 		return nil, fmt.Errorf("empty response")
 	}
 
-	// Strip markdown code fences if present
 	text := apiResp.Content[0].Text
 	text = strings.TrimSpace(text)
 	if strings.HasPrefix(text, "```") {
-		// Remove opening fence (e.g. ```json)
 		if idx := strings.Index(text, "\n"); idx != -1 {
 			text = text[idx+1:]
 		}
-		// Remove closing fence
 		if idx := strings.LastIndex(text, "```"); idx != -1 {
 			text = text[:idx]
 		}
@@ -326,7 +304,6 @@ Respond with ONLY valid JSON (no markdown):
 		return nil, fmt.Errorf("parse error: %v\nRaw: %s", err, text[:500])
 	}
 
-	// Post-process the tailored LaTeX
 	result.TailoredLatex = postProcessLatex(result.TailoredLatex)
 
 	return &result, nil
@@ -338,7 +315,6 @@ func generateCoverLetter(resume, jobDescription string, matchResult *MatchResult
 		return "", fmt.Errorf("ANTHROPIC_API_KEY not set")
 	}
 
-	// Build match analysis section
 	var matchInfo strings.Builder
 	matchInfo.WriteString("MATCH ANALYSIS:\n")
 	matchInfo.WriteString(fmt.Sprintf("Score: %d/100\n\n", matchResult.Score))
@@ -355,7 +331,6 @@ func generateCoverLetter(resume, jobDescription string, matchResult *MatchResult
 		}
 	}
 
-	// Build user context section
 	contextSection := ""
 	if userContext != "" {
 		contextSection = fmt.Sprintf("\nADDITIONAL CONTEXT FROM CANDIDATE:\n%s\n", userContext)
@@ -442,7 +417,6 @@ func printResult(r *MatchResult) {
 	fmt.Println(color.New(color.Bold, color.Underline).Sprint("Match Analysis"))
 	fmt.Println(strings.Repeat("─", 50))
 
-	// Score with color
 	scoreColor := color.RedString
 	if r.Score >= 80 {
 		scoreColor = color.GreenString

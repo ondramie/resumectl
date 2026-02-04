@@ -1,4 +1,4 @@
-module resume-tailor
+module resumectl
 
 go 1.20
 

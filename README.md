@@ -1,13 +1,15 @@
-# resume-tailor
+# resumectl
 
-CLI tool that matches your resume against job postings and tailors it for better ATS scores.
+Self-custodial job hunting. You own your data.
+
+> Like a crypto wallet for your job search — no SaaS platform owns your history.
 
 ## Features
 
 - **Match & Score** - Analyzes resume against job descriptions, scores 0-100
 - **Auto-Tailor** - Reorders bullet points and highlights relevant skills
 - **Cover Letters** - Optional cover letter generation
-- **Local Database** - Saves jobs to SQLite (`~/.resume-tailor/data.db`)
+- **Local Database** - All data in SQLite (`~/.resumectl/data.db`)
 - **Multiple ATS** - Supports Greenhouse, Lever, Ashby, Rippling, generic pages
 
 ## Prerequisites
@@ -19,51 +21,43 @@ CLI tool that matches your resume against job postings and tailors it for better
 
 ## Setup
 
-1. **Build:**
-   ```bash
-   go build -o resume-tailor .
-   ```
+```bash
+# Build
+go build -o resumectl .
 
-2. **Set API key:**
-   ```bash
-   # Option A: direnv (recommended)
-   echo 'export ANTHROPIC_API_KEY=your-key' > .env
-   echo 'dotenv' > .envrc
-   direnv allow
+# Set API key (one time)
+echo 'export ANTHROPIC_API_KEY=your-key' > .env
+echo 'dotenv' > .envrc
+direnv allow
 
-   # Option B: export directly
-   export ANTHROPIC_API_KEY=your-key
-   ```
-
-3. **Create resume template** (LaTeX):
-   ```bash
-   # Edit resume.template.tex with your info
-   ```
+# Or export directly
+export ANTHROPIC_API_KEY=your-key
+```
 
 ## Usage
 
 ### Match a job posting
 ```bash
-./resume-tailor match "https://jobs.lever.co/company/job-id"
-./resume-tailor match "https://boards.greenhouse.io/company/jobs/123"
+resumectl match "https://jobs.lever.co/company/job-id"
+resumectl match "https://boards.greenhouse.io/company/jobs/123"
 
-# From file (for blocked sites)
-./resume-tailor match -f jobs/description.txt "CompanyName"
+# From file (for sites without API)
+resumectl match -f jobs/description.txt "CompanyName"
 
 # With cover letter
-./resume-tailor match --cover-letter "https://..."
+resumectl match --cover-letter "https://..."
 ```
 
 ### List saved jobs
 ```bash
-./resume-tailor list
-./resume-tailor list --min-score 75
-./resume-tailor list --status new
+resumectl list
+resumectl list --min-score 75
+resumectl list --status new
 ```
 
 ### Compile PDF
 ```bash
-./resume-tailor pdf results/company/job-id
+resumectl pdf results/company/job-id
 ```
 
 ## Output
@@ -83,3 +77,10 @@ Results saved to `results/{company}/{job-id}/`:
 | Ashby | API |
 | Rippling | Scrape |
 | Generic | Scrape + JSON-LD |
+
+## Privacy (Self-Custodial)
+
+- All data stored locally (`~/.resumectl/`)
+- Claude API is stateless (no data retention)
+- Delete everything: `rm -rf ~/.resumectl`
+- Export: just copy the folder

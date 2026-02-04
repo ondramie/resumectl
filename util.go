@@ -10,23 +10,21 @@ import (
 func stripHTML(html string) string {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
-		// Fallback: crude regex strip
 		re := regexp.MustCompile(`<[^>]*>`)
 		return re.ReplaceAllString(html, "")
 	}
 	text := doc.Text()
-	// Clean up whitespace
 	text = regexp.MustCompile(`\s+`).ReplaceAllString(text, " ")
 	return strings.TrimSpace(text)
 }
 
 func extractReqIDFromURL(rawURL string) string {
 	patterns := []*regexp.Regexp{
-		regexp.MustCompile(`/jobs/([a-f0-9-]+)`),         // rippling, lever
-		regexp.MustCompile(`/jobs/(\d+)`),                // greenhouse
-		regexp.MustCompile(`[?&]pid=(\d+)`),              // netflix
-		regexp.MustCompile(`/job/([a-f0-9-]+)`),          // generic
-		regexp.MustCompile(`[?&](?:req|id|jid)=([^&]+)`), // query params
+		regexp.MustCompile(`/jobs/([a-f0-9-]+)`),
+		regexp.MustCompile(`/jobs/(\d+)`),
+		regexp.MustCompile(`[?&]pid=(\d+)`),
+		regexp.MustCompile(`/job/([a-f0-9-]+)`),
+		regexp.MustCompile(`[?&](?:req|id|jid)=([^&]+)`),
 	}
 
 	for _, p := range patterns {
@@ -39,7 +37,6 @@ func extractReqIDFromURL(rawURL string) string {
 }
 
 func extractCompanyFromURL(rawURL string) string {
-	// Known ATS patterns: extract company from path
 	patterns := []struct {
 		re    *regexp.Regexp
 		group int
@@ -59,7 +56,6 @@ func extractCompanyFromURL(rawURL string) string {
 		}
 	}
 
-	// Fallback: domain name
 	re := regexp.MustCompile(`https?://(?:www\.)?([^/]+)`)
 	if matches := re.FindStringSubmatch(rawURL); matches != nil {
 		parts := strings.Split(matches[1], ".")
@@ -71,12 +67,10 @@ func extractCompanyFromURL(rawURL string) string {
 }
 
 func postProcessLatex(latex string) string {
-	// Fix tabular column spec to prevent overflow — replace the whole line
 	tabularRe := regexp.MustCompile(`(?m)^.*\\begin\{tabular\}.*$`)
 	latex = tabularRe.ReplaceAllString(latex,
 		`\begin{tabular}{ @{} >{\bfseries}l @{\hspace{3ex}} >{\raggedright\arraybackslash}p{0.68\textwidth} }`)
 
-	// Ensure hyphenation settings are present
 	if !strings.Contains(latex, `\hyphenpenalty`) {
 		latex = strings.Replace(latex,
 			`\usepackage[left=0.75in,top=0.6in,right=0.75in,bottom=0.6in]{geometry}`,
