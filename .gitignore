@@ -1,0 +1,7 @@
+.env
+.envrc
+resume-tailor
+results/
+jobs/
+.DS_Store
+resume.template.tex
