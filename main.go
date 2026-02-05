@@ -3,8 +3,13 @@ package main
 import (
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	godotenv.Load()
+}
 
 var (
 	resumePath      string
@@ -67,6 +72,9 @@ func main() {
 		Run:   runPdf,
 	}
 	rootCmd.AddCommand(pdfCmd)
+
+	scanCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.tex", "Path to resume LaTeX file")
+	rootCmd.AddCommand(scanCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
