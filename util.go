@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -19,12 +20,18 @@ func stripHTML(html string) string {
 }
 
 func extractReqIDFromURL(rawURL string) string {
+	if u, err := url.Parse(rawURL); err == nil {
+		for _, key := range []string{"pid", "req", "id", "jid", "gh_jid"} {
+			if v := u.Query().Get(key); v != "" {
+				return v
+			}
+		}
+	}
+
 	patterns := []*regexp.Regexp{
 		regexp.MustCompile(`/jobs/([a-f0-9-]+)`),
 		regexp.MustCompile(`/jobs/(\d+)`),
-		regexp.MustCompile(`[?&]pid=(\d+)`),
 		regexp.MustCompile(`/job/([a-f0-9-]+)`),
-		regexp.MustCompile(`[?&](?:req|id|jid)=([^&]+)`),
 	}
 
 	for _, p := range patterns {

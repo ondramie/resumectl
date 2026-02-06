@@ -24,7 +24,16 @@ var atsRoutes = map[string]atsHandler{
 
 func handleGreenhouse(u *url.URL, parts []string) (*JobInfo, error) {
 	if token := u.Query().Get("token"); token != "" {
-		return fetchGreenhouseEmbed(token)
+		job, err := fetchGreenhouseEmbed(token)
+		if err != nil {
+			return nil, err
+		}
+		if job.Company == "unknown" {
+			if forCompany := u.Query().Get("for"); forCompany != "" {
+				job.Company = forCompany
+			}
+		}
+		return job, nil
 	}
 	for i, p := range parts {
 		if p == "jobs" && i+1 < len(parts) && i > 0 {
@@ -53,6 +62,8 @@ func handleRippling(u *url.URL, parts []string) (*JobInfo, error) {
 }
 
 func fetchJobDescription(rawURL string) (*JobInfo, error) {
+	rawURL = strings.ReplaceAll(rawURL, `\`, "")
+
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, fmt.Errorf("invalid URL: %v", err)
