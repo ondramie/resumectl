@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
+
+var usStatePattern = regexp.MustCompile(`, (AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)(?:\s|$|,)`)
 
 var (
 	scanQuery    string
@@ -62,10 +65,12 @@ func runScan(cmd *cobra.Command, args []string) {
 		jobs, err = scanWeb3Career(keywords, scanMaxAge)
 	case "remoteok":
 		jobs, err = scanRemoteOK(keywords, scanMaxAge)
+	case "google":
+		jobs, err = scanGoogleJobs(keywords, scanMaxAge)
 	case "all":
 		jobs, err = scanAllBoards(keywords, scanMaxAge)
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown board: %s\nAvailable: web3, remoteok, all\n", scanBoard)
+		fmt.Fprintf(os.Stderr, "Unknown board: %s\nAvailable: web3, remoteok, google, all\n", scanBoard)
 		os.Exit(1)
 	}
 
@@ -132,6 +137,19 @@ func scanAllBoards(keywords []string, maxAgeDays int) ([]ScanResult, error) {
 		}
 	}
 
+	googleJobs, err := scanGoogleJobs(keywords, maxAgeDays)
+	if err != nil {
+		fmt.Printf("  google: %v\n", err)
+	} else {
+		fmt.Printf("  google: %d jobs\n", len(googleJobs))
+		for _, j := range googleJobs {
+			if !seen[j.URL] {
+				seen[j.URL] = true
+				all = append(all, j)
+			}
+		}
+	}
+
 	return all, nil
 }
 
@@ -150,11 +168,13 @@ func filterByLocation(jobs []ScanResult, filter string) []ScanResult {
 		for _, f := range filters {
 			switch f {
 			case "remote":
-				match = strings.Contains(loc, "remote")
+				match = strings.Contains(loc, "remote") || strings.Contains(loc, "anywhere")
 			case "usa", "us":
 				match = strings.Contains(loc, "united states") ||
 					strings.Contains(loc, ", us") ||
 					strings.Contains(loc, "usa") ||
+					strings.Contains(loc, "anywhere") ||
+					usStatePattern.MatchString(loc) ||
 					strings.Contains(loc, "new york") ||
 					strings.Contains(loc, "san francisco") ||
 					strings.Contains(loc, "los angeles") ||
@@ -163,7 +183,9 @@ func filterByLocation(jobs []ScanResult, filter string) []ScanResult {
 					strings.Contains(loc, "denver") ||
 					strings.Contains(loc, "chicago") ||
 					strings.Contains(loc, "miami") ||
-					strings.Contains(loc, "boston")
+					strings.Contains(loc, "boston") ||
+					strings.Contains(loc, "tampa") ||
+					strings.Contains(loc, "washington")
 			default:
 				match = strings.Contains(loc, f)
 			}
@@ -191,21 +213,28 @@ func sortByScore(jobs []ScanResult) {
 }
 
 func printScanResults(jobs []ScanResult) {
-	fmt.Printf("%-6s %-5s %-18s %-30s %-20s %s\n", "Score", "Age", "Company", "Title", "Location", "URL")
-	fmt.Println(strings.Repeat("─", 120))
+	fmt.Printf("%-6s %-12s %-15s %-28s %-15s %s\n", "Score", "Salary", "Company", "Title", "Location", "URL")
+	fmt.Println(strings.Repeat("─", 130))
 
 	for _, j := range jobs {
 		company := j.Company
-		if len(company) > 18 {
-			company = company[:15] + "..."
+		if len(company) > 15 {
+			company = company[:12] + "..."
 		}
 		title := j.Title
-		if len(title) > 30 {
-			title = title[:27] + "..."
+		if len(title) > 28 {
+			title = title[:25] + "..."
 		}
 		location := j.Location
-		if len(location) > 20 {
-			location = location[:17] + "..."
+		if len(location) > 15 {
+			location = location[:12] + "..."
+		}
+		salary := j.Salary
+		if salary == "" {
+			salary = "-"
+		}
+		if len(salary) > 12 {
+			salary = salary[:12]
 		}
 
 		scoreStr := fmt.Sprintf("%d", j.Score)
@@ -217,6 +246,6 @@ func printScanResults(jobs []ScanResult) {
 			scoreStr = color.RedString("%d", j.Score)
 		}
 
-		fmt.Printf("%-6s %-5s %-18s %-30s %-20s %s\n", scoreStr, j.Age, company, title, location, j.URL)
+		fmt.Printf("%-6s %-12s %-15s %-28s %-15s %s\n", scoreStr, salary, company, title, location, j.URL)
 	}
 }

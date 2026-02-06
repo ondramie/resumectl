@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -9,6 +10,11 @@ import (
 
 func init() {
 	godotenv.Load()
+	if exe, err := os.Executable(); err == nil {
+		godotenv.Load(filepath.Join(filepath.Dir(exe), ".env"))
+	}
+	home, _ := os.UserHomeDir()
+	godotenv.Load(filepath.Join(home, ".resumectl", ".env"))
 }
 
 var (
