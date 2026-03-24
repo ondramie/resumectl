@@ -32,6 +32,7 @@ func extractReqIDFromURL(rawURL string) string {
 		regexp.MustCompile(`/jobs/([a-f0-9-]+)`),
 		regexp.MustCompile(`/jobs/(\d+)`),
 		regexp.MustCompile(`/job/([a-f0-9-]+)`),
+		regexp.MustCompile(`/positions/(\d+)`),
 	}
 
 	for _, p := range patterns {
