@@ -68,6 +68,13 @@ func runMatch(cmd *cobra.Command, args []string) {
 
 	fmt.Printf("Job: %s at %s\n", job.Title, job.Company)
 
+	descLen := len(strings.TrimSpace(job.Description))
+	if descLen < 200 {
+		fmt.Fprintf(os.Stderr, "Error: fetched job description is too short (%d chars) — the page likely requires JavaScript to render.\n", descLen)
+		fmt.Fprintf(os.Stderr, "Copy the job description to a file and use: resumectl match --file job.txt --company %s\n", job.Company)
+		os.Exit(1)
+	}
+
 	currentResume := string(resume)
 	var bestResult *MatchResult
 	var bestScore int
@@ -110,6 +117,14 @@ func runMatch(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	printResult(bestResult)
+
+	if fabricated := detectFabrication(string(resume), bestResult.TailoredLatex); len(fabricated) > 0 {
+		fmt.Printf("\n%s Potential fabrication detected — these terms appear in the tailored resume but NOT in your original:\n", color.RedString("⚠ WARNING"))
+		for _, t := range fabricated {
+			fmt.Printf("  %s %s\n", color.RedString("✗"), t)
+		}
+		fmt.Println("Review the tailored resume carefully before using it.")
+	}
 
 	if db != nil {
 		var jobURL string
@@ -235,8 +250,10 @@ Instructions:
 4. Create a tailored LaTeX resume that:
    - Reorders bullet points to emphasize relevant experience first
    - Adjusts the Technical section to highlight relevant skills
-   - Does NOT add false information
+   - Does NOT add false information — NEVER add technologies, tools, frameworks, or skills that are not already in the original resume
+   - Does NOT rewrite bullet points to mention technologies the candidate did not list
    - Keeps exact same LaTeX structure
+   - If the job description appears empty or too short to analyze, return the original resume unchanged with a score of 0
 
 Respond with ONLY valid JSON (no markdown):
 {
@@ -438,4 +455,33 @@ func printResult(r *MatchResult) {
 			fmt.Printf("  %s %s\n", color.RedString("✗"), g)
 		}
 	}
+}
+
+func detectFabrication(original, tailored string) []string {
+	techTerms := []string{
+		"Ruby", "Rails", "Sidekiq", "Redis", "Django", "Flask", "FastAPI",
+		"Node.js", "Express", "Angular", "Vue", "Next.js", "Svelte",
+		"C#", ".NET", "ASP.NET", "PHP", "Laravel", "Perl", "Swift",
+		"Kotlin", "Objective-C", "R ", "MATLAB", "Fortran", "Cobol",
+		"MongoDB", "DynamoDB", "CouchDB", "Neo4j", "GraphQL",
+		"RabbitMQ", "ActiveMQ", "NATS", "Pulsar", "Flink",
+		"TensorFlow", "PyTorch", "Keras", "scikit-learn",
+		"AWS Lambda", "Azure", "GCP", "Heroku",
+		"Spring Boot", "Hibernate", "Maven", "Gradle",
+		"Jenkins", "CircleCI", "TravisCI", "ArgoCD",
+		"Ansible", "Chef", "Puppet", "Consul", "Vault",
+		"Debezium", "Druid", "Pinot",
+	}
+
+	originalLower := strings.ToLower(original)
+	tailoredLower := strings.ToLower(tailored)
+
+	var fabricated []string
+	for _, term := range techTerms {
+		termLower := strings.ToLower(strings.TrimSpace(term))
+		if strings.Contains(tailoredLower, termLower) && !strings.Contains(originalLower, termLower) {
+			fabricated = append(fabricated, strings.TrimSpace(term))
+		}
+	}
+	return fabricated
 }
