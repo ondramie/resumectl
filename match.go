@@ -138,6 +138,11 @@ func runMatch(cmd *cobra.Command, args []string) {
 				fmt.Fprintf(os.Stderr, "Warning: could not save to database: %v\n", err)
 			} else {
 				fmt.Printf("%s Saved to database\n", color.GreenString("✓"))
+
+				outputDir := generateOutputDir(job)
+				if err := SaveMatchRun(jobURL, bestResult.Score, bestResult.StrongMatches, bestResult.Gaps, contentHash(string(resume)), contentHash(bestResult.TailoredLatex), outputDir); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: could not save match run: %v\n", err)
+				}
 			}
 		}
 	}

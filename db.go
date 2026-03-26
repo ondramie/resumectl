@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -50,6 +53,23 @@ func InitDB() error {
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		)
 	`)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS match_runs (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			job_id INTEGER REFERENCES jobs(id),
+			score INTEGER,
+			strong_matches TEXT,
+			gaps TEXT,
+			source_resume_hash TEXT,
+			tailored_resume_hash TEXT,
+			output_dir TEXT,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`)
 	return err
 }
 
@@ -62,6 +82,27 @@ func SaveJob(url, company, title string, score int) error {
 			updated_at = CURRENT_TIMESTAMP
 	`, url, company, title, score)
 	return err
+}
+
+func SaveMatchRun(jobURL string, score int, strongMatches, gaps []string, sourceHash, tailoredHash, outputDir string) error {
+	var jobID int64
+	err := db.QueryRow("SELECT id FROM jobs WHERE url = ?", jobURL).Scan(&jobID)
+	if err != nil {
+		return err
+	}
+
+	matchesJSON, _ := json.Marshal(strongMatches)
+	gapsJSON, _ := json.Marshal(gaps)
+
+	_, err = db.Exec(`
+		INSERT INTO match_runs (job_id, score, strong_matches, gaps, source_resume_hash, tailored_resume_hash, output_dir)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`, jobID, score, string(matchesJSON), string(gapsJSON), sourceHash, tailoredHash, outputDir)
+	return err
+}
+
+func contentHash(content string) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(content)))[:12]
 }
 
 func ListJobs(status string, minScore int) ([]Job, error) {
