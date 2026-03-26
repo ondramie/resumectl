@@ -29,9 +29,10 @@ func extractReqIDFromURL(rawURL string) string {
 	}
 
 	patterns := []*regexp.Regexp{
-		regexp.MustCompile(`/jobs/([a-f0-9-]+)`),
+		regexp.MustCompile(`/jobs/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})`),
 		regexp.MustCompile(`/jobs/(\d+)`),
-		regexp.MustCompile(`/job/([a-f0-9-]+)`),
+		regexp.MustCompile(`/job/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})`),
+		regexp.MustCompile(`/job/(\d+)`),
 		regexp.MustCompile(`/positions/(\d+)`),
 	}
 
@@ -49,6 +50,7 @@ func extractCompanyFromURL(rawURL string) string {
 		re    *regexp.Regexp
 		group int
 	}{
+		{regexp.MustCompile(`/companies/([^/]+)/jobs/`), 1},
 		{regexp.MustCompile(`ats\.rippling\.com/([^/]+)/jobs/`), 1},
 		{regexp.MustCompile(`boards\.greenhouse\.io/([^/]+)/`), 1},
 		{regexp.MustCompile(`jobs\.lever\.co/([^/]+)/`), 1},
