@@ -20,6 +20,7 @@ var atsRoutes = map[string]atsHandler{
 	"jobs.lever.co":            handleLever,
 	"jobs.ashbyhq.com":         handleAshby,
 	"ats.rippling.com":         handleRippling,
+	"apply.workable.com":       handleWorkable,
 }
 
 func handleGreenhouse(u *url.URL, parts []string) (*JobInfo, error) {
@@ -61,6 +62,70 @@ func handleRippling(u *url.URL, parts []string) (*JobInfo, error) {
 	return fetchGenericJob(u.String())
 }
 
+func handleWorkable(u *url.URL, parts []string) (*JobInfo, error) {
+	if len(parts) >= 3 && parts[1] == "j" {
+		return fetchWorkableJob(parts[0], parts[2])
+	}
+	return nil, fmt.Errorf("could not parse Workable URL: %s", u.String())
+}
+
+func fetchWorkableJob(company, shortcode string) (*JobInfo, error) {
+	apiURL := fmt.Sprintf("https://apply.workable.com/api/v2/accounts/%s/jobs/%s", company, shortcode)
+
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Workable API error: HTTP %d", resp.StatusCode)
+	}
+
+	var job struct {
+		Title        string   `json:"title"`
+		Department   []string `json:"department"`
+		Workplace    string   `json:"workplace"`
+		Description  string   `json:"description"`
+		Requirements string   `json:"requirements"`
+		Benefits     string   `json:"benefits"`
+		Location     struct {
+			City    string `json:"city"`
+			Country string `json:"country"`
+		} `json:"location"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&job); err != nil {
+		return nil, err
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Title: %s\n", job.Title))
+	sb.WriteString(fmt.Sprintf("Company: %s\n", company))
+	if job.Location.City != "" || job.Location.Country != "" {
+		sb.WriteString(fmt.Sprintf("Location: %s, %s\n", job.Location.City, job.Location.Country))
+	}
+	if job.Workplace != "" {
+		sb.WriteString(fmt.Sprintf("Workplace: %s\n", job.Workplace))
+	}
+	if len(job.Department) > 0 {
+		sb.WriteString(fmt.Sprintf("Department: %s\n", strings.Join(job.Department, ", ")))
+	}
+	sb.WriteString(fmt.Sprintf("\n%s\n", stripHTML(job.Description)))
+	if job.Requirements != "" {
+		sb.WriteString(fmt.Sprintf("\nRequirements:\n%s\n", stripHTML(job.Requirements)))
+	}
+	if job.Benefits != "" {
+		sb.WriteString(fmt.Sprintf("\nBenefits:\n%s\n", stripHTML(job.Benefits)))
+	}
+
+	return &JobInfo{
+		Company:     company,
+		Title:       job.Title,
+		ReqID:       shortcode,
+		Description: sb.String(),
+	}, nil
+}
+
 func fetchJobDescription(rawURL string) (*JobInfo, error) {
 	rawURL = strings.ReplaceAll(rawURL, `\`, "")
 
@@ -81,7 +146,7 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 	}
 
 	if ghJobID := u.Query().Get("gh_jid"); ghJobID != "" {
-		company := strings.Split(u.Hostname(), ".")[0]
+		company := extractCompanyFromURL(rawURL)
 		fmt.Printf("  Detected Greenhouse job ID, trying API for %s...\n", company)
 		if job, err := fetchGreenhouseJob(company, ghJobID); err == nil {
 			return job, nil

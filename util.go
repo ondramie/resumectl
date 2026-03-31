@@ -50,6 +50,7 @@ func extractCompanyFromURL(rawURL string) string {
 		re    *regexp.Regexp
 		group int
 	}{
+		{regexp.MustCompile(`apply\.workable\.com/([^/]+)/`), 1},
 		{regexp.MustCompile(`/companies/([^/]+)/jobs/`), 1},
 		{regexp.MustCompile(`ats\.rippling\.com/([^/]+)/jobs/`), 1},
 		{regexp.MustCompile(`boards\.greenhouse\.io/([^/]+)/`), 1},
