@@ -77,6 +77,43 @@ func extractCompanyFromURL(rawURL string) string {
 	return "unknown"
 }
 
+func filterFalseGaps(gaps []string, resume string) []string {
+	resumeLower := strings.ToLower(resume)
+	stopWords := map[string]bool{
+		"experience": true, "the": true, "and": true, "for": true,
+		"with": true, "from": true, "that": true, "this": true,
+		"not": true, "but": true, "are": true, "was": true,
+		"has": true, "have": true, "had": true, "been": true,
+		"web": true, "framework": true, "limited": true,
+		"explicit": true, "mentioned": true, "listed": true,
+		"skills": true, "knowledge": true, "proficiency": true,
+		"expertise": true, "background": true, "strong": true,
+		"direct": true, "specific": true, "dedicated": true,
+		"streaming": true, "processing": true, "development": true,
+		"engineering": true, "production": true, "building": true,
+	}
+	techPattern := regexp.MustCompile(`[A-Z][a-zA-Z]*(?:\.[a-zA-Z]+)*|[a-z]+(?:\.[a-zA-Z]+)+`)
+	var filtered []string
+	for _, gap := range gaps {
+		techs := techPattern.FindAllString(gap, -1)
+		found := false
+		for _, tech := range techs {
+			techLower := strings.ToLower(tech)
+			if len(techLower) < 2 || stopWords[techLower] {
+				continue
+			}
+			if strings.Contains(resumeLower, techLower) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			filtered = append(filtered, gap)
+		}
+	}
+	return filtered
+}
+
 func postProcessLatex(latex string) string {
 	tabularRe := regexp.MustCompile(`(?m)^.*\\begin\{tabular\}.*$`)
 	latex = tabularRe.ReplaceAllString(latex,

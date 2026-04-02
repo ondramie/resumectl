@@ -252,6 +252,7 @@ Instructions:
 3. Identify gaps (required skills/experience that are truly missing)
    - Use common sense inference: if the resume lists Elixir + Postgres, the candidate obviously has ORM experience (Ecto). If they list Python + Postgres, they have used SQLAlchemy or similar. Do NOT flag commonly implied skills as gaps.
    - Only flag a gap if the skill/experience is genuinely absent and cannot be reasonably inferred from the listed technologies and experience.
+   - CRITICAL: Do NOT list something as a gap if it appears anywhere in the resume. Cross-check every gap against the full resume before including it.
 4. Create a tailored LaTeX resume that:
    - Reorders bullet points to emphasize relevant experience first
    - Adjusts the Technical section to highlight relevant skills
@@ -327,6 +328,7 @@ Respond with ONLY valid JSON (no markdown):
 	}
 
 	result.TailoredLatex = postProcessLatex(result.TailoredLatex)
+	result.Gaps = filterFalseGaps(result.Gaps, resume)
 
 	return &result, nil
 }

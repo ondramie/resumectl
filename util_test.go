@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestExtractReqIDFromURL(t *testing.T) {
 	tests := []struct {
@@ -52,6 +54,64 @@ func TestExtractCompanyFromURL(t *testing.T) {
 			got := extractCompanyFromURL(tt.url)
 			if got != tt.want {
 				t.Errorf("extractCompanyFromURL(%q) = %q, want %q", tt.url, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFilterFalseGaps(t *testing.T) {
+	resume := `Built Cashback rewards service (Ruby/Rails) aggregating data.
+Built real-time data pipelines (Kafka, Flink) ingesting blockchain state.
+Experience with Rust and Python.`
+
+	tests := []struct {
+		name     string
+		gaps     []string
+		wantLen  int
+		wantGaps []string
+	}{
+		{
+			"filters rails gap",
+			[]string{"Ruby/Rails web framework experience", "DeltaLake experience"},
+			1,
+			[]string{"DeltaLake experience"},
+		},
+		{
+			"filters flink gap",
+			[]string{"Flink streaming experience", "Iceberg experience"},
+			1,
+			[]string{"Iceberg experience"},
+		},
+		{
+			"filters rust gap",
+			[]string{"Rust experience", "Go experience"},
+			1,
+			[]string{"Go experience"},
+		},
+		{
+			"keeps genuine gaps",
+			[]string{"Kubernetes experience", "DeltaLake experience"},
+			2,
+			[]string{"Kubernetes experience", "DeltaLake experience"},
+		},
+		{
+			"empty gaps",
+			[]string{},
+			0,
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := filterFalseGaps(tt.gaps, resume)
+			if len(got) != tt.wantLen {
+				t.Errorf("filterFalseGaps() returned %d gaps, want %d: %v", len(got), tt.wantLen, got)
+			}
+			for i, want := range tt.wantGaps {
+				if i < len(got) && got[i] != want {
+					t.Errorf("gap[%d] = %q, want %q", i, got[i], want)
+				}
 			}
 		})
 	}
