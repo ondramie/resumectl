@@ -253,6 +253,7 @@ Instructions:
    - Use common sense inference: if the resume lists Elixir + Postgres, the candidate obviously has ORM experience (Ecto). If they list Python + Postgres, they have used SQLAlchemy or similar. Do NOT flag commonly implied skills as gaps.
    - Only flag a gap if the skill/experience is genuinely absent and cannot be reasonably inferred from the listed technologies and experience.
    - CRITICAL: Do NOT list something as a gap if it appears anywhere in the resume. Cross-check every gap against the full resume before including it.
+   - CRITICAL: Every point deducted from the score MUST be explained by a gap. If the score is 78, there are 22 points of gaps — list them ALL. Be specific about which job requirements are not met.
 4. Create a tailored LaTeX resume that:
    - Reorders bullet points to emphasize relevant experience first
    - Adjusts the Technical section to highlight relevant skills

@@ -95,6 +95,12 @@ Experience with Rust and Python.`
 			[]string{"Kubernetes experience", "DeltaLake experience"},
 		},
 		{
+			"keeps non-tech gaps",
+			[]string{"No healthcare domain experience", "Limited front-end experience"},
+			2,
+			[]string{"No healthcare domain experience", "Limited front-end experience"},
+		},
+		{
 			"empty gaps",
 			[]string{},
 			0,

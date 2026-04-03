@@ -79,30 +79,30 @@ func extractCompanyFromURL(rawURL string) string {
 
 func filterFalseGaps(gaps []string, resume string) []string {
 	resumeLower := strings.ToLower(resume)
-	stopWords := map[string]bool{
-		"experience": true, "the": true, "and": true, "for": true,
-		"with": true, "from": true, "that": true, "this": true,
-		"not": true, "but": true, "are": true, "was": true,
-		"has": true, "have": true, "had": true, "been": true,
-		"web": true, "framework": true, "limited": true,
-		"explicit": true, "mentioned": true, "listed": true,
-		"skills": true, "knowledge": true, "proficiency": true,
-		"expertise": true, "background": true, "strong": true,
-		"direct": true, "specific": true, "dedicated": true,
-		"streaming": true, "processing": true, "development": true,
-		"engineering": true, "production": true, "building": true,
-	}
-	techPattern := regexp.MustCompile(`[A-Z][a-zA-Z]*(?:\.[a-zA-Z]+)*|[a-z]+(?:\.[a-zA-Z]+)+`)
+	techTerms := regexp.MustCompile(
+		`(?i)\b(` +
+			`[A-Z][a-z]*(?:\.js|\.net|\.io)|` +
+			`[A-Z][a-zA-Z]*DB|` +
+			`Go|Rust|Ruby|Rails|Python|Java|Scala|Kotlin|Swift|Elixir|` +
+			`TypeScript|JavaScript|C\+\+|C#|PHP|Perl|R\b|SQL|NoSQL|` +
+			`Kafka|Flink|Spark|Hadoop|Hive|Presto|Airflow|Prefect|dbt|` +
+			`Snowflake|Redshift|BigQuery|ClickHouse|Postgres|MySQL|MongoDB|DynamoDB|Cassandra|Redis|` +
+			`Docker|Kubernetes|Terraform|Ansible|Jenkins|` +
+			`AWS|GCP|Azure|Lambda|ECS|Fargate|S3|` +
+			`React|Angular|Vue|Next\.js|Svelte|Django|Flask|FastAPI|Spring|Rails|Laravel|` +
+			`GraphQL|REST|gRPC|Protobuf|` +
+			`Elasticsearch|Kibana|Grafana|Prometheus|Datadog|` +
+			`Git|CI/CD|ArgoCD|CircleCI|` +
+			`Meltano|Looker|Tableau|dbt|Iceberg|DeltaLake|Delta\s?Lake|Debezium|` +
+			`Kinesis|RabbitMQ|Pulsar|NATS|SQS|` +
+			`TensorFlow|PyTorch|scikit-learn|MLflow` +
+			`)\b`)
 	var filtered []string
 	for _, gap := range gaps {
-		techs := techPattern.FindAllString(gap, -1)
+		matches := techTerms.FindAllString(gap, -1)
 		found := false
-		for _, tech := range techs {
-			techLower := strings.ToLower(tech)
-			if len(techLower) < 2 || stopWords[techLower] {
-				continue
-			}
-			if strings.Contains(resumeLower, techLower) {
+		for _, m := range matches {
+			if strings.Contains(resumeLower, strings.ToLower(m)) {
 				found = true
 				break
 			}
