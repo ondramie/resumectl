@@ -12,15 +12,19 @@ import (
 	"strings"
 )
 
-func quickScore(resume, jobTitle, company string) (int, error) {
+func quickScore(resume, jobDescription, company string) (int, error) {
 	apiKey := os.Getenv("ANTHROPIC_API_KEY")
 	if apiKey == "" {
 		return 0, fmt.Errorf("ANTHROPIC_API_KEY not set")
 	}
 
-	prompt := fmt.Sprintf(`Score resume fit for job "%s" at %s. Output ONLY: {"score":N} where N is 0-100.
+	prompt := fmt.Sprintf(`Score how well this resume matches the job description. Output ONLY: {"score":N} where N is 0-100.
 
-%s`, jobTitle, company, resume)
+RESUME:
+%s
+
+JOB DESCRIPTION:
+%s`, resume, jobDescription)
 
 	reqBody := map[string]interface{}{
 		"model":      "claude-haiku-4-5-20251001",

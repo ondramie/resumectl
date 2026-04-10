@@ -32,7 +32,7 @@ func selectBestTemplate(job *JobInfo) string {
 		if err != nil {
 			continue
 		}
-		score, err := quickScore(string(resume), job.Title, job.Company)
+		score, err := quickScore(string(resume), job.Description, job.Company)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "  Warning: could not score %s: %v\n", t, err)
 			continue
@@ -293,8 +293,8 @@ Instructions:
    - CRITICAL: Do NOT list something as a gap if it appears anywhere in the resume. Cross-check every gap against the full resume before including it.
    - CRITICAL: Every point deducted from the score MUST be explained by a gap. If the score is 78, there are 22 points of gaps — list them ALL. Be specific about which job requirements are not met.
 4. Create a tailored LaTeX resume that:
-   - Reorders bullet points to emphasize relevant experience first
-   - Adjusts the Technical section to highlight relevant skills
+   - CRITICAL: Reorder bullet points to mirror the job description's priority. The first requirement in the job description should be addressed by the first bullet point in each relevant role. Match the job's emphasis order exactly.
+   - Reorder rows in the Technical section so the most relevant category appears first
    - Does NOT add false information — NEVER add technologies, tools, frameworks, or skills that are not already in the original resume
    - Does NOT rewrite bullet points to mention technologies the candidate did not list
    - Keeps exact same LaTeX structure
