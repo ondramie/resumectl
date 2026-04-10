@@ -4,4 +4,6 @@ resumectl
 results/
 jobs/
 .DS_Store
-resume.template.tex
+*.tex
+*.md
+.vscode
