@@ -16,18 +16,46 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func selectBestTemplate(job *JobInfo) string {
+	templates, _ := filepath.Glob("resume.template*.tex")
+	if len(templates) <= 1 {
+		return resumePath
+	}
+
+	fmt.Printf("\n%s Found %d resume templates, selecting best match...\n", color.CyanString("→"), len(templates))
+
+	bestPath := templates[0]
+	bestScore := -1
+
+	for _, t := range templates {
+		resume, err := os.ReadFile(t)
+		if err != nil {
+			continue
+		}
+		score, err := quickScore(string(resume), job.Title, job.Company)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "  Warning: could not score %s: %v\n", t, err)
+			continue
+		}
+		label := filepath.Base(t)
+		fmt.Printf("  %s: %s\n", label, color.CyanString("%d/100", score))
+		if score > bestScore {
+			bestScore = score
+			bestPath = t
+		}
+	}
+
+	fmt.Printf("  %s Selected: %s\n", color.GreenString("✓"), filepath.Base(bestPath))
+	return bestPath
+}
+
 func runMatch(cmd *cobra.Command, args []string) {
 	if err := InitDB(); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not init database: %v\n", err)
 	}
 
-	resume, err := os.ReadFile(resumePath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading resume: %v\n", err)
-		os.Exit(1)
-	}
-
 	var job *JobInfo
+	var err error
 
 	if jobFile != "" {
 		fmt.Println("Loading job description from file...")
@@ -72,6 +100,16 @@ func runMatch(cmd *cobra.Command, args []string) {
 	if descLen < 200 {
 		fmt.Fprintf(os.Stderr, "Error: fetched job description is too short (%d chars) — the page likely requires JavaScript to render.\n", descLen)
 		fmt.Fprintf(os.Stderr, "Copy the job description to a file and use: resumectl match --file job.txt --company %s\n", job.Company)
+		os.Exit(1)
+	}
+
+	if !cmd.Flags().Changed("resume") {
+		resumePath = selectBestTemplate(job)
+	}
+
+	resume, err := os.ReadFile(resumePath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading resume: %v\n", err)
 		os.Exit(1)
 	}
 

@@ -23,7 +23,7 @@ func quickScore(resume, jobTitle, company string) (int, error) {
 %s`, jobTitle, company, resume)
 
 	reqBody := map[string]interface{}{
-		"model":      "claude-3-5-haiku-latest",
+		"model":      "claude-haiku-4-5-20251001",
 		"max_tokens": 50,
 		"messages": []map[string]string{
 			{"role": "user", "content": prompt},
