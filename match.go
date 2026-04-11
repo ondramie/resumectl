@@ -24,8 +24,7 @@ func selectBestTemplate(job *JobInfo) string {
 
 	fmt.Printf("\n%s Found %d resume templates, selecting best match...\n", color.CyanString("→"), len(templates))
 
-	bestPath := templates[0]
-	bestScore := -1
+	var results []scoredTemplate
 
 	for _, t := range templates {
 		resume, err := os.ReadFile(t)
@@ -39,14 +38,35 @@ func selectBestTemplate(job *JobInfo) string {
 		}
 		label := filepath.Base(t)
 		fmt.Printf("  %s: %s\n", label, color.CyanString("%d/100", score))
-		if score > bestScore {
-			bestScore = score
-			bestPath = t
+		results = append(results, scoredTemplate{t, score})
+	}
+
+	if len(results) == 0 {
+		return resumePath
+	}
+
+	best := results[0]
+
+	tied := false
+	for _, r := range results[1:] {
+		if r.score > best.score {
+			best = r
+			tied = false
+		} else if r.score == best.score {
+			tied = true
 		}
 	}
 
-	fmt.Printf("  %s Selected: %s\n", color.GreenString("✓"), filepath.Base(bestPath))
-	return bestPath
+	if tied {
+		fmt.Printf("  %s Tie detected, comparing directly...\n", color.YellowString("⚠"))
+		winner, err := compareTemplates(results, job.Description)
+		if err == nil {
+			best = winner
+		}
+	}
+
+	fmt.Printf("  %s Selected: %s\n", color.GreenString("✓"), filepath.Base(best.path))
+	return best.path
 }
 
 func runMatch(cmd *cobra.Command, args []string) {
@@ -288,8 +308,8 @@ Instructions:
 1. Score the match 0-100 based on actual skill/experience alignment
 2. Identify strong matches (skills/experience that align well)
 3. Identify gaps (required skills/experience that are truly missing)
-   - Use common sense inference: if the resume lists Elixir + Postgres, the candidate obviously has ORM experience (Ecto). If they list Python + Postgres, they have used SQLAlchemy or similar. Do NOT flag commonly implied skills as gaps.
-   - Only flag a gap if the skill/experience is genuinely absent and cannot be reasonably inferred from the listed technologies and experience.
+   - Use common sense inference. Building services implies APIs, databases, CI/CD, and system design. Running production infrastructure implies on-call, incident response, and reliability engineering. Building real-time streaming services implies scaling strategies and stream processing. Leading a platform team implies mentoring and cross-team design. Do NOT flag skills that are obviously implied by the work described.
+   - Only flag a gap if the skill/experience is genuinely absent and cannot be reasonably inferred from the listed technologies and experience. Be smart about this — think about what work actually involves, not just what keywords are present.
    - CRITICAL: Do NOT list something as a gap if it appears anywhere in the resume. Cross-check every gap against the full resume before including it.
    - CRITICAL: Every point deducted from the score MUST be explained by a gap. If the score is 78, there are 22 points of gaps — list them ALL. Be specific about which job requirements are not met.
 4. Create a tailored LaTeX resume that:

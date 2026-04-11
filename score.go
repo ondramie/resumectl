@@ -7,10 +7,99 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 )
+
+type scoredTemplate struct {
+	path  string
+	score int
+}
+
+func compareTemplates(templates []scoredTemplate, jobDescription string) (scoredTemplate, error) {
+	apiKey := os.Getenv("ANTHROPIC_API_KEY")
+	if apiKey == "" {
+		return templates[0], fmt.Errorf("ANTHROPIC_API_KEY not set")
+	}
+
+	var sb strings.Builder
+	for i, t := range templates {
+		resume, err := os.ReadFile(t.path)
+		if err != nil {
+			continue
+		}
+		sb.WriteString(fmt.Sprintf("=== RESUME %d (file: %s) ===\n%s\n\n", i+1, filepath.Base(t.path), string(resume)))
+	}
+
+	prompt := fmt.Sprintf(`Which resume is a better match for this job? Consider the job title, requirements, and emphasis. Output ONLY: {"winner":N} where N is the resume number (1 or 2).
+
+%s
+=== JOB DESCRIPTION ===
+%s`, sb.String(), jobDescription)
+
+	reqBody := map[string]interface{}{
+		"model":      "claude-haiku-4-5-20251001",
+		"max_tokens": 50,
+		"messages": []map[string]string{
+			{"role": "user", "content": prompt},
+		},
+	}
+
+	jsonBody, _ := json.Marshal(reqBody)
+
+	req, _ := http.NewRequest("POST", "https://api.anthropic.com/v1/messages", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-key", apiKey)
+	req.Header.Set("anthropic-version", "2023-06-01")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return templates[0], err
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode != 200 {
+		return templates[0], fmt.Errorf("API error %d: %s", resp.StatusCode, string(body))
+	}
+
+	var apiResp struct {
+		Content []struct {
+			Text string `json:"text"`
+		} `json:"content"`
+	}
+	if err := json.Unmarshal(body, &apiResp); err != nil {
+		return templates[0], err
+	}
+
+	if len(apiResp.Content) == 0 {
+		return templates[0], fmt.Errorf("empty response")
+	}
+
+	text := strings.TrimSpace(apiResp.Content[0].Text)
+	start := strings.Index(text, "{")
+	end := strings.LastIndex(text, "}")
+	if start == -1 || end == -1 {
+		return templates[0], fmt.Errorf("no JSON in response")
+	}
+
+	var result struct {
+		Winner int `json:"winner"`
+	}
+	if err := json.Unmarshal([]byte(text[start:end+1]), &result); err != nil {
+		return templates[0], err
+	}
+
+	idx := result.Winner - 1
+	if idx >= 0 && idx < len(templates) {
+		return templates[idx], nil
+	}
+	return templates[0], nil
+}
 
 func quickScore(resume, jobDescription, company string) (int, error) {
 	apiKey := os.Getenv("ANTHROPIC_API_KEY")
