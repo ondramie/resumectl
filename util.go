@@ -70,6 +70,12 @@ func extractCompanyFromURL(rawURL string) string {
 	re := regexp.MustCompile(`https?://(?:www\.)?([^/]+)`)
 	if matches := re.FindStringSubmatch(rawURL); matches != nil {
 		parts := strings.Split(matches[1], ".")
+		skip := map[string]bool{"jobs": true, "careers": true, "apply": true, "hire": true, "recruiting": true}
+		for _, p := range parts {
+			if !skip[p] && len(p) > 1 {
+				return p
+			}
+		}
 		if len(parts) > 0 {
 			return parts[0]
 		}

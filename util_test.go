@@ -46,6 +46,7 @@ func TestExtractCompanyFromURL(t *testing.T) {
 		{"bamboohr", "https://acme.bamboohr.com/careers/123", "acme"},
 		{"ashby", "https://jobs.ashbyhq.com/acme/abc-123", "acme"},
 		{"www stripped", "https://www.instacart.careers/job?gh_jid=7171161", "instacart"},
+		{"jobs subdomain", "https://jobs.twilio.com/careers?pid=123", "twilio"},
 		{"plain domain", "https://example.com/careers/apply", "example"},
 	}
 
