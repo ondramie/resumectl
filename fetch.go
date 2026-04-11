@@ -145,6 +145,23 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 		return handler(u, pathParts)
 	}
 
+	if ashbyJID := u.Query().Get("ashby_jid"); ashbyJID != "" {
+		company := extractCompanyFromURL(rawURL)
+		fmt.Printf("  Detected Ashby job ID, trying API for %s...\n", company)
+		candidates := []string{company}
+		stripped := strings.TrimPrefix(company, "hello")
+		stripped = strings.TrimPrefix(stripped, "get")
+		stripped = strings.TrimPrefix(stripped, "try")
+		if stripped != company {
+			candidates = append(candidates, stripped)
+		}
+		for _, c := range candidates {
+			if job, err := fetchAshbyJob(c, ashbyJID); err == nil {
+				return job, nil
+			}
+		}
+	}
+
 	if ghJobID := u.Query().Get("gh_jid"); ghJobID != "" {
 		company := extractCompanyFromURL(rawURL)
 		fmt.Printf("  Detected Greenhouse job ID, trying API for %s...\n", company)
