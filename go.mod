@@ -1,6 +1,6 @@
 module resumectl
 
-go 1.20
+go 1.24.1
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
@@ -13,6 +13,7 @@ require (
 require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect

@@ -79,10 +79,21 @@ func runMatch(cmd *cobra.Command, args []string) {
 
 	if jobFile != "" {
 		fmt.Println("Loading job description from file...")
-		content, err := os.ReadFile(jobFile)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading job file: %v\n", err)
-			os.Exit(1)
+		var content []byte
+		if strings.HasSuffix(strings.ToLower(jobFile), ".pdf") {
+			text, err := extractPDFText(jobFile)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error extracting text from PDF: %v\n", err)
+				os.Exit(1)
+			}
+			content = []byte(text)
+		} else {
+			var err error
+			content, err = os.ReadFile(jobFile)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error reading job file: %v\n", err)
+				os.Exit(1)
+			}
 		}
 
 		baseName := strings.TrimSuffix(filepath.Base(jobFile), filepath.Ext(jobFile))

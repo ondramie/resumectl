@@ -6,10 +6,12 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	gopdf "github.com/ledongthuc/pdf"
 )
 
 type atsHandler func(u *url.URL, pathParts []string) (*JobInfo, error)
@@ -126,6 +128,86 @@ func fetchWorkableJob(company, shortcode string) (*JobInfo, error) {
 	}, nil
 }
 
+func extractPDFText(filePath string) (string, error) {
+	f, r, err := gopdf.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("error parsing PDF: %v", err)
+	}
+	defer f.Close()
+
+	var sb strings.Builder
+	for i := 1; i <= r.NumPage(); i++ {
+		p := r.Page(i)
+		if p.V.IsNull() {
+			continue
+		}
+		text, err := p.GetPlainText(nil)
+		if err != nil {
+			continue
+		}
+		sb.WriteString(text)
+	}
+	return strings.TrimSpace(sb.String()), nil
+}
+
+func fetchPDFJob(pdfURL string) (*JobInfo, error) {
+	resp, err := http.Get(pdfURL)
+	if err != nil {
+		return nil, fmt.Errorf("error downloading PDF: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("PDF download error: HTTP %d", resp.StatusCode)
+	}
+
+	tmpFile, err := os.CreateTemp("", "resumectl-*.pdf")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
+
+	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+		return nil, err
+	}
+	tmpFile.Close()
+
+	f, r, err := gopdf.Open(tmpFile.Name())
+	if err != nil {
+		return nil, fmt.Errorf("error parsing PDF: %v", err)
+	}
+	defer f.Close()
+
+	var sb strings.Builder
+	for i := 1; i <= r.NumPage(); i++ {
+		p := r.Page(i)
+		if p.V.IsNull() {
+			continue
+		}
+		text, err := p.GetPlainText(nil)
+		if err != nil {
+			continue
+		}
+		sb.WriteString(text)
+	}
+
+	content := strings.TrimSpace(sb.String())
+	if len(content) < 100 {
+		return nil, fmt.Errorf("PDF text extraction returned too little content (%d chars)", len(content))
+	}
+
+	company := extractCompanyFromURL(pdfURL)
+	reqID := extractReqIDFromURL(pdfURL)
+
+	return &JobInfo{
+		Company:     company,
+		Title:       reqID,
+		ReqID:       reqID,
+		Description: content,
+	}, nil
+}
+
 func fetchJobDescription(rawURL string) (*JobInfo, error) {
 	rawURL = strings.ReplaceAll(rawURL, `\`, "")
 
@@ -139,6 +221,10 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 		if p != "" {
 			pathParts = append(pathParts, p)
 		}
+	}
+
+	if strings.HasSuffix(strings.ToLower(u.Path), ".pdf") {
+		return fetchPDFJob(rawURL)
 	}
 
 	if handler, ok := atsRoutes[u.Hostname()]; ok {
