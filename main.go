@@ -82,6 +82,14 @@ func main() {
 	scanCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.tex", "Path to resume LaTeX file")
 	rootCmd.AddCommand(scanCmd)
 
+	var pipelineCmd = &cobra.Command{
+		Use:   "pipeline",
+		Short: "View your job application pipeline",
+		Run:   runPipeline,
+	}
+	pipelineCmd.Flags().String("by", "", "Group by: industry, role, or both (default)")
+	rootCmd.AddCommand(pipelineCmd)
+
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
