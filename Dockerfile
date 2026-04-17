@@ -9,5 +9,6 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/resumectl /usr/local/bin/
 COPY resume.cls /root/.resumectl/resume.cls
+COPY resume.template*.tex /root/.resumectl/
 RUN mkdir -p /data
 CMD ["resumectl", "serve", "--port", "8080"]
