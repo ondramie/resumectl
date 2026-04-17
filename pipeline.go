@@ -73,22 +73,32 @@ func printFunnel() {
 	}
 
 	fmt.Printf("  Total: %d jobs\n\n", total)
+	maxBar := 30
 	for _, r := range data {
-		bar := strings.Repeat("█", r.count)
-		statusColor := color.WhiteString
-		switch r.status {
-		case "applied":
-			statusColor = color.CyanString
-		case "screening":
-			statusColor = color.YellowString
-		case "interview":
-			statusColor = color.MagentaString
-		case "offer":
-			statusColor = color.GreenString
-		case "rejected":
-			statusColor = color.RedString
+		barLen := r.count
+		if total > maxBar {
+			barLen = r.count * maxBar / total
+			if barLen == 0 && r.count > 0 {
+				barLen = 1
+			}
 		}
-		fmt.Printf("  %-12s %s %s (avg score: %d)\n", statusColor(r.status), bar, color.CyanString("%d", r.count), r.avgScore)
+		barStr := strings.Repeat("█", barLen)
+		colorFn := color.New(color.FgWhite).SprintFunc()
+		switch r.status {
+		case "new":
+			colorFn = color.New(color.FgBlue).SprintFunc()
+		case "applied":
+			colorFn = color.New(color.FgCyan).SprintFunc()
+		case "screening":
+			colorFn = color.New(color.FgYellow).SprintFunc()
+		case "interview":
+			colorFn = color.New(color.FgMagenta).SprintFunc()
+		case "offer":
+			colorFn = color.New(color.FgGreen).SprintFunc()
+		case "rejected":
+			colorFn = color.New(color.FgRed).SprintFunc()
+		}
+		fmt.Printf("  %-12s %s %s (avg score: %d)\n", colorFn(r.status), colorFn(barStr), color.CyanString("%d", r.count), r.avgScore)
 	}
 }
 
@@ -147,8 +157,12 @@ func printByIndustry() {
 		var industry string
 		var total, avg, rejected, pending, interviews int
 		rows.Scan(&industry, &total, &avg, &rejected, &pending, &interviews)
-		fmt.Printf("  %-14s %5d %5d %5s %5d %5d\n",
-			industry, total, avg, color.RedString("%d", rejected), pending, interviews)
+		rejStr := fmt.Sprintf("%5d", rejected)
+		if rejected > 0 {
+			rejStr = fmt.Sprintf("%s%s", strings.Repeat(" ", 5-len(fmt.Sprintf("%d", rejected))), color.RedString("%d", rejected))
+		}
+		fmt.Printf("  %-14s %5d %5d %s %5d %5d\n",
+			industry, total, avg, rejStr, pending, interviews)
 	}
 }
 
@@ -176,8 +190,12 @@ func printByRole() {
 		var roleType string
 		var total, avg, rejected, pending, interviews int
 		rows.Scan(&roleType, &total, &avg, &rejected, &pending, &interviews)
-		fmt.Printf("  %-16s %5d %5d %5s %5d %5d\n",
-			roleType, total, avg, color.RedString("%d", rejected), pending, interviews)
+		rejStr := fmt.Sprintf("%5d", rejected)
+		if rejected > 0 {
+			rejStr = fmt.Sprintf("%s%s", strings.Repeat(" ", 5-len(fmt.Sprintf("%d", rejected))), color.RedString("%d", rejected))
+		}
+		fmt.Printf("  %-16s %5d %5d %s %5d %5d\n",
+			roleType, total, avg, rejStr, pending, interviews)
 	}
 }
 
