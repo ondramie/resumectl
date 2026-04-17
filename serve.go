@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -32,6 +33,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/match", authMiddleware(handleMatch))
 	mux.HandleFunc("/pipeline", authMiddleware(handlePipeline))
+	mux.HandleFunc("/pdf/", authMiddleware(handlePDFDownload))
 	mux.HandleFunc("/health", handleHealth)
 
 	addr := fmt.Sprintf(":%d", servePort)
@@ -142,6 +144,23 @@ func handleMatch(w http.ResponseWriter, r *http.Request) {
 	}
 	os.WriteFile(outputDir+"/report.txt", []byte(report), 0644)
 
+	clsFiles, _ := filepath.Glob("*.cls")
+	if len(clsFiles) == 0 {
+		home, _ := os.UserHomeDir()
+		clsFiles, _ = filepath.Glob(filepath.Join(home, ".resumectl", "*.cls"))
+	}
+	for _, cls := range clsFiles {
+		src, _ := os.ReadFile(cls)
+		os.WriteFile(filepath.Join(outputDir, filepath.Base(cls)), src, 0644)
+	}
+
+	pdfURL := ""
+	cmd := exec.Command("tectonic", "resume.tex")
+	cmd.Dir = outputDir
+	if err := cmd.Run(); err == nil {
+		pdfURL = fmt.Sprintf("/pdf/%s/resume.pdf", outputDir)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"score":          result.Score,
@@ -151,6 +170,7 @@ func handleMatch(w http.ResponseWriter, r *http.Request) {
 		"gaps":           result.Gaps,
 		"template_used":  bestTemplate,
 		"output_dir":     outputDir,
+		"pdf_url":        pdfURL,
 	})
 }
 
@@ -206,6 +226,24 @@ func handlePipeline(w http.ResponseWriter, r *http.Request) {
 		"funnel": funnel,
 		"active": active,
 	})
+}
+
+func handlePDFDownload(w http.ResponseWriter, r *http.Request) {
+	path := strings.TrimPrefix(r.URL.Path, "/pdf/")
+	if !strings.HasSuffix(path, ".pdf") || strings.Contains(path, "..") {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"resume.pdf\""))
+	w.Write(data)
 }
 
 func findTemplates() ([]string, error) {
