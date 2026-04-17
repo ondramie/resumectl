@@ -82,6 +82,15 @@ func main() {
 	scanCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.tex", "Path to resume LaTeX file")
 	rootCmd.AddCommand(scanCmd)
 
+	var serveCmd = &cobra.Command{
+		Use:   "serve",
+		Short: "Start HTTP server for remote resume matching",
+		Run:   runServe,
+	}
+	serveCmd.Flags().IntVar(&servePort, "port", 8080, "Port to listen on")
+	serveCmd.Flags().StringVar(&serveToken, "token", "", "Bearer token for auth (or API_TOKEN env var)")
+	rootCmd.AddCommand(serveCmd)
+
 	var pipelineCmd = &cobra.Command{
 		Use:   "pipeline",
 		Short: "View your job application pipeline",

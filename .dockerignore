@@ -1,0 +1,45 @@
+# flyctl launch added from .gitignore
+**/.env
+**/.envrc
+**/resumectl
+**/results
+**/jobs
+**/.DS_Store
+**/.vscode
+
+# flyctl launch added from results/launchdarkly/practice/.pytest_cache/.gitignore
+# Created by pytest automatically.
+results/launchdarkly/practice/.pytest_cache/**/*
+
+# flyctl launch added from results/launchdarkly/practice/.venv/.gitignore
+# created by virtualenv automatically
+results/launchdarkly/practice/.venv/**/*
+
+# flyctl launch added from results/meta/data-analytics/practice/.pytest_cache/.gitignore
+# Created by pytest automatically.
+results/meta/data-analytics/practice/.pytest_cache/**/*
+
+# flyctl launch added from results/meta/data-analytics/practice/.venv/.gitignore
+# created by virtualenv automatically
+results/meta/data-analytics/practice/.venv/**/*
+
+# flyctl launch added from results/netflix/practice/.pytest_cache/.gitignore
+# Created by pytest automatically.
+results/netflix/practice/.pytest_cache/**/*
+
+# flyctl launch added from results/netflix/practice/.venv/.gitignore
+# created by virtualenv automatically
+results/netflix/practice/.venv/**/*
+
+# flyctl launch added from results/ziprecruiter/practice/.pytest_cache/.gitignore
+# Created by pytest automatically.
+results/ziprecruiter/practice/.pytest_cache/**/*
+
+# flyctl launch added from results/ziprecruiter/practice/.venv/.gitignore
+# created by virtualenv automatically
+results/ziprecruiter/practice/.venv/**/*
+fly.toml
+
+# custom
+**/*.md
+pipeline-export.csv
