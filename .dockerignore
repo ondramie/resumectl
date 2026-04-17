@@ -43,3 +43,5 @@ fly.toml
 # custom
 **/*.md
 pipeline-export.csv
+ios-resumectl/
+infra/
