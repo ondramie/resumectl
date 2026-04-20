@@ -238,6 +238,7 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 		stripped := strings.TrimPrefix(company, "hello")
 		stripped = strings.TrimPrefix(stripped, "get")
 		stripped = strings.TrimPrefix(stripped, "try")
+		stripped = strings.TrimSuffix(stripped, "hq")
 		if stripped != company {
 			candidates = append(candidates, stripped)
 		}
