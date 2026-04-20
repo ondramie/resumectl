@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS match_runs;
+DROP TABLE IF EXISTS jobs;

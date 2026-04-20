@@ -108,7 +108,7 @@ func printTimeline() {
 
 	rows, err := db.Query(`
 		SELECT company, title, score, applied_at, rejected_at,
-			CAST(julianday(rejected_at) - julianday(applied_at) AS INTEGER) as days
+			EXTRACT(DAY FROM rejected_at - applied_at)::INTEGER as days
 		FROM jobs
 		WHERE status='rejected' AND applied_at IS NOT NULL AND rejected_at IS NOT NULL
 		ORDER BY rejected_at DESC`)
@@ -205,7 +205,7 @@ func printActive() {
 
 	rows, err := db.Query(`
 		SELECT company, title, score, applied_at,
-			CAST(julianday('now') - julianday(applied_at) AS INTEGER) as days_waiting
+			EXTRACT(DAY FROM NOW() - applied_at)::INTEGER as days_waiting
 		FROM jobs
 		WHERE status='applied' AND applied_at IS NOT NULL
 		ORDER BY applied_at ASC`)

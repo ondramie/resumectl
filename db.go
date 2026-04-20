@@ -3,14 +3,20 @@ package main
 import (
 	"crypto/sha256"
 	"database/sql"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
+	_ "github.com/lib/pq"
 )
+
+//go:embed migrations/*.sql
+var migrations embed.FS
 
 var db *sql.DB
 
@@ -26,67 +32,49 @@ type Job struct {
 }
 
 func InitDB() error {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	dataDir := filepath.Join(homeDir, ".resumectl")
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		return err
+	dbURL := os.Getenv("NEON_DB_URL")
+	if dbURL == "" {
+		return fmt.Errorf("NEON_DB_URL not set")
 	}
 
-	dbPath := filepath.Join(dataDir, "data.db")
-	db, err = sql.Open("sqlite3", dbPath)
+	var err error
+	db, err = sql.Open("postgres", dbURL)
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS jobs (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			url TEXT UNIQUE,
-			company TEXT,
-			title TEXT,
-			score INTEGER,
-			status TEXT DEFAULT 'new',
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)
-	`)
+	src, err := iofs.New(migrations, "migrations")
 	if err != nil {
 		return err
 	}
-
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS match_runs (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			job_id INTEGER REFERENCES jobs(id),
-			score INTEGER,
-			strong_matches TEXT,
-			gaps TEXT,
-			source_resume_hash TEXT,
-			tailored_resume_hash TEXT,
-			output_dir TEXT,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)
-	`)
-	return err
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return err
+	}
+	m, err := migrate.NewWithInstance("iofs", src, "postgres", driver)
+	if err != nil {
+		return err
+	}
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+	return nil
 }
 
 func SaveJob(url, company, title string, score int) error {
 	_, err := db.Exec(`
 		INSERT INTO jobs (url, company, title, score, status)
-		VALUES (?, ?, ?, ?, 'new')
+		VALUES ($1, $2, $3, $4, 'new')
 		ON CONFLICT(url) DO UPDATE SET
-			score = excluded.score,
-			updated_at = CURRENT_TIMESTAMP
+			score = EXCLUDED.score,
+			updated_at = NOW()
 	`, url, company, title, score)
 	return err
 }
 
 func SaveMatchRun(jobURL string, score int, strongMatches, gaps []string, sourceHash, tailoredHash, outputDir string) error {
 	var jobID int64
-	err := db.QueryRow("SELECT id FROM jobs WHERE url = ?", jobURL).Scan(&jobID)
+	err := db.QueryRow("SELECT id FROM jobs WHERE url = $1", jobURL).Scan(&jobID)
 	if err != nil {
 		return err
 	}
@@ -96,7 +84,7 @@ func SaveMatchRun(jobURL string, score int, strongMatches, gaps []string, source
 
 	_, err = db.Exec(`
 		INSERT INTO match_runs (job_id, score, strong_matches, gaps, source_resume_hash, tailored_resume_hash, output_dir)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`, jobID, score, string(matchesJSON), string(gapsJSON), sourceHash, tailoredHash, outputDir)
 	return err
 }
@@ -109,7 +97,7 @@ func FindJobByQuery(query string) (*Job, error) {
 	row := db.QueryRow(`
 		SELECT id, url, company, title, score, status, created_at, updated_at
 		FROM jobs
-		WHERE url = ? OR LOWER(company) LIKE '%' || LOWER(?) || '%' OR LOWER(title) LIKE '%' || LOWER(?) || '%'
+		WHERE url = $1 OR LOWER(company) LIKE '%' || LOWER($2) || '%' OR LOWER(title) LIKE '%' || LOWER($3) || '%'
 		ORDER BY created_at DESC LIMIT 1`, query, query, query)
 	var j Job
 	err := row.Scan(&j.ID, &j.URL, &j.Company, &j.Title, &j.Score, &j.Status, &j.CreatedAt, &j.UpdatedAt)
@@ -124,15 +112,14 @@ func UpdateJobStatus(id int, status string) error {
 	if !validStatuses[status] {
 		return fmt.Errorf("invalid status %q: must be one of new, applied, screening, interview, offer, rejected, withdrawn", status)
 	}
-	now := time.Now()
 	var err error
 	switch status {
 	case "applied":
-		_, err = db.Exec(`UPDATE jobs SET status=?, applied_at=?, updated_at=? WHERE id=?`, status, now, now, id)
+		_, err = db.Exec(`UPDATE jobs SET status=$1, applied_at=NOW(), updated_at=NOW() WHERE id=$2`, status, id)
 	case "rejected":
-		_, err = db.Exec(`UPDATE jobs SET status=?, rejected_at=?, updated_at=? WHERE id=?`, status, now, now, id)
+		_, err = db.Exec(`UPDATE jobs SET status=$1, rejected_at=NOW(), updated_at=NOW() WHERE id=$2`, status, id)
 	default:
-		_, err = db.Exec(`UPDATE jobs SET status=?, updated_at=? WHERE id=?`, status, now, id)
+		_, err = db.Exec(`UPDATE jobs SET status=$1, updated_at=NOW() WHERE id=$2`, status, id)
 	}
 	return err
 }
@@ -140,13 +127,15 @@ func UpdateJobStatus(id int, status string) error {
 func ListJobs(status string, minScore int) ([]Job, error) {
 	query := "SELECT id, url, company, title, score, status, created_at, updated_at FROM jobs WHERE 1=1"
 	args := []interface{}{}
+	i := 1
 
 	if status != "" {
-		query += " AND status = ?"
+		query += fmt.Sprintf(" AND status = $%d", i)
 		args = append(args, status)
+		i++
 	}
 	if minScore > 0 {
-		query += " AND score >= ?"
+		query += fmt.Sprintf(" AND score >= $%d", i)
 		args = append(args, minScore)
 	}
 	query += " ORDER BY created_at DESC"

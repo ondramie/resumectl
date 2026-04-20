@@ -208,7 +208,7 @@ func handlePipeline(w http.ResponseWriter, r *http.Request) {
 	var active []activeRow
 	rows2, err := db.Query(`
 		SELECT company, title, score, applied_at,
-			CAST(julianday('now') - julianday(applied_at) AS INTEGER)
+			EXTRACT(DAY FROM NOW() - applied_at)::INTEGER
 		FROM jobs
 		WHERE status='applied' AND applied_at IS NOT NULL
 		ORDER BY applied_at ASC`)
