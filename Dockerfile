@@ -6,9 +6,9 @@ COPY . .
 RUN CGO_ENABLED=1 go build -o resumectl .
 
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y ca-certificates curl && \
-    curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh && \
-    mv tectonic /usr/local/bin/ && \
+RUN apt-get update && apt-get install -y ca-certificates curl xz-utils && \
+    curl -fsSL https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.14.1/tectonic-0.14.1-x86_64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/tectonic && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/resumectl /usr/local/bin/
 COPY resume.cls /root/.resumectl/resume.cls

@@ -1,0 +1,41 @@
+name: Resumectl
+options:
+  bundleIdPrefix: com.ondras
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+schemes:
+  Resumectl:
+    build:
+      targets:
+        Resumectl: all
+        ShareExtension: all
+
+targets:
+  Resumectl:
+    type: application
+    platform: iOS
+    sources:
+      - Resumectl
+    settings:
+      INFOPLIST_FILE: Resumectl/Info.plist
+      PRODUCT_BUNDLE_IDENTIFIER: com.ondras.resumectl
+      DEVELOPMENT_TEAM: 4WM77L2S6H
+      SWIFT_VERSION: "5.9"
+      CODE_SIGN_ENTITLEMENTS: Resumectl/Resumectl.entitlements
+    dependencies:
+      - target: ShareExtension
+
+  ShareExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - ShareExtension
+      - Resumectl/KeychainHelper.swift
+    settings:
+      INFOPLIST_FILE: ShareExtension/Info.plist
+      PRODUCT_BUNDLE_IDENTIFIER: com.ondras.resumectl.share
+      DEVELOPMENT_TEAM: 4WM77L2S6H
+      SWIFT_VERSION: "5.9"
+      CODE_SIGN_ENTITLEMENTS: ShareExtension/ShareExtension.entitlements

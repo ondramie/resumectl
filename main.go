@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -98,6 +100,37 @@ func main() {
 	}
 	pipelineCmd.Flags().String("by", "", "Group by: industry, role, or both (default)")
 	rootCmd.AddCommand(pipelineCmd)
+
+	var statusCmd = &cobra.Command{
+		Use:   "status <company|url|id> <status>",
+		Short: "Update a job's status (applied, screening, interview, offer, rejected, withdrawn)",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := InitDB(); err != nil {
+				fmt.Fprintf(os.Stderr, "error: %v\n", err)
+				os.Exit(1)
+			}
+			query, newStatus := args[0], args[1]
+			var id int
+			if n, err := strconv.Atoi(query); err == nil {
+				id = n
+			} else {
+				job, err := FindJobByQuery(query)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "error: %v\n", err)
+					os.Exit(1)
+				}
+				fmt.Printf("Matched: [%d] %s — %s\n", job.ID, job.Company, job.Title)
+				id = job.ID
+			}
+			if err := UpdateJobStatus(id, newStatus); err != nil {
+				fmt.Fprintf(os.Stderr, "error: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("→ %s\n", newStatus)
+		},
+	}
+	rootCmd.AddCommand(statusCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)

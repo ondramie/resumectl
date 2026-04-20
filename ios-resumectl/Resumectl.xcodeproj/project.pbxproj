@@ -1,0 +1,444 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		03223EE3FE62994DAF621216 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 69C049F3C9CDF9BBE05A2742 /* Assets.xcassets */; };
+		139E016BA1BE5E8DB4A0C61A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D83F3700121C94B078013810 /* ContentView.swift */; };
+		1DFFEDBC2C8C556DD43D127C /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B2AC77EA611BD3A35BF1C0B8 /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4D49B8D2B772512C38D58427 /* ResumectlApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BACCC5D7B62C480190A3D7E3 /* ResumectlApp.swift */; };
+		69237B9B5E7773C3BFBCEA99 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38BF10D6EB7F764637CEDBFA /* KeychainHelper.swift */; };
+		85B5313A09F5533907BE5804 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A787CC755A637A89E66AB57B /* ShareViewController.swift */; };
+		A46E2B51B53E569DF3BDEF2E /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38BF10D6EB7F764637CEDBFA /* KeychainHelper.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3DB0090F4E2468E884283AB7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B9EDAC830C38ACE7703CB4A4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0397B1B1D3ED8BA811984A39;
+			remoteInfo = ShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		891D8DFC332E4F9D02EF333C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1DFFEDBC2C8C556DD43D127C /* ShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		2FE404263AA95F7CCECEA863 /* Resumectl.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Resumectl.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		38BF10D6EB7F764637CEDBFA /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		3D2D009388AC7297CED1609A /* Resumectl.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Resumectl.entitlements; sourceTree = "<group>"; };
+		69C049F3C9CDF9BBE05A2742 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A787CC755A637A89E66AB57B /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		B2AC77EA611BD3A35BF1C0B8 /* ShareExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B37C48F01F0DA4528F0CC7EC /* ShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareExtension.entitlements; sourceTree = "<group>"; };
+		BACCC5D7B62C480190A3D7E3 /* ResumectlApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumectlApp.swift; sourceTree = "<group>"; };
+		CEBBA7CB030EC32BF20AB03A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D83F3700121C94B078013810 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		FA9AB78375C6CA3611E23C4E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1C8E2D11F6940A5EBAB6AD0C = {
+			isa = PBXGroup;
+			children = (
+				FEAB33E5F9697A909DD9F8C8 /* Resumectl */,
+				7374EA667DE9EE8AA07B3FED /* ShareExtension */,
+				CB215E9B9E736993DA026514 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7374EA667DE9EE8AA07B3FED /* ShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				CEBBA7CB030EC32BF20AB03A /* Info.plist */,
+				B37C48F01F0DA4528F0CC7EC /* ShareExtension.entitlements */,
+				A787CC755A637A89E66AB57B /* ShareViewController.swift */,
+			);
+			path = ShareExtension;
+			sourceTree = "<group>";
+		};
+		CB215E9B9E736993DA026514 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2FE404263AA95F7CCECEA863 /* Resumectl.app */,
+				B2AC77EA611BD3A35BF1C0B8 /* ShareExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FEAB33E5F9697A909DD9F8C8 /* Resumectl */ = {
+			isa = PBXGroup;
+			children = (
+				69C049F3C9CDF9BBE05A2742 /* Assets.xcassets */,
+				D83F3700121C94B078013810 /* ContentView.swift */,
+				FA9AB78375C6CA3611E23C4E /* Info.plist */,
+				38BF10D6EB7F764637CEDBFA /* KeychainHelper.swift */,
+				3D2D009388AC7297CED1609A /* Resumectl.entitlements */,
+				BACCC5D7B62C480190A3D7E3 /* ResumectlApp.swift */,
+			);
+			path = Resumectl;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0397B1B1D3ED8BA811984A39 /* ShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9E38068FCB1205EC86ED99A9 /* Build configuration list for PBXNativeTarget "ShareExtension" */;
+			buildPhases = (
+				5E1380DAE516BD2B8C72A304 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShareExtension;
+			packageProductDependencies = (
+			);
+			productName = ShareExtension;
+			productReference = B2AC77EA611BD3A35BF1C0B8 /* ShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		4AA40468F8DF2C89ECE5D59A /* Resumectl */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34D36DC4AA8B429BE4E2834E /* Build configuration list for PBXNativeTarget "Resumectl" */;
+			buildPhases = (
+				BD75F9849245AB2BC6DE4A1F /* Sources */,
+				8D0DBB702A1EFF66B040C221 /* Resources */,
+				891D8DFC332E4F9D02EF333C /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C7E2B4895279B3A7E0E7CEA8 /* PBXTargetDependency */,
+			);
+			name = Resumectl;
+			packageProductDependencies = (
+			);
+			productName = Resumectl;
+			productReference = 2FE404263AA95F7CCECEA863 /* Resumectl.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B9EDAC830C38ACE7703CB4A4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					0397B1B1D3ED8BA811984A39 = {
+						DevelopmentTeam = 4WM77L2S6H;
+					};
+					4AA40468F8DF2C89ECE5D59A = {
+						DevelopmentTeam = 4WM77L2S6H;
+					};
+				};
+			};
+			buildConfigurationList = 50B25CF7EBF743790475DC59 /* Build configuration list for PBXProject "Resumectl" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 1C8E2D11F6940A5EBAB6AD0C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 54;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4AA40468F8DF2C89ECE5D59A /* Resumectl */,
+				0397B1B1D3ED8BA811984A39 /* ShareExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D0DBB702A1EFF66B040C221 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03223EE3FE62994DAF621216 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5E1380DAE516BD2B8C72A304 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A46E2B51B53E569DF3BDEF2E /* KeychainHelper.swift in Sources */,
+				85B5313A09F5533907BE5804 /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BD75F9849245AB2BC6DE4A1F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				139E016BA1BE5E8DB4A0C61A /* ContentView.swift in Sources */,
+				69237B9B5E7773C3BFBCEA99 /* KeychainHelper.swift in Sources */,
+				4D49B8D2B772512C38D58427 /* ResumectlApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C7E2B4895279B3A7E0E7CEA8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0397B1B1D3ED8BA811984A39 /* ShareExtension */;
+			targetProxy = 3DB0090F4E2468E884283AB7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		11CDD9D395BBCF3E0AEF1EB2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		378B4F7EE2E5A61D47E0C520 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Resumectl/Resumectl.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 4WM77L2S6H;
+				INFOPLIST_FILE = Resumectl/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ondras.resumectl;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3E161AA93628FC1F97301DFC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				DEVELOPMENT_TEAM = 4WM77L2S6H;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ondras.resumectl.share;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		72575CB7235613727C0A1438 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				DEVELOPMENT_TEAM = 4WM77L2S6H;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ondras.resumectl.share;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		88A21189F61DB5D336D8CDBA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Resumectl/Resumectl.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 4WM77L2S6H;
+				INFOPLIST_FILE = Resumectl/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ondras.resumectl;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CA19D43435E192C55D8FF6B1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		34D36DC4AA8B429BE4E2834E /* Build configuration list for PBXNativeTarget "Resumectl" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				88A21189F61DB5D336D8CDBA /* Debug */,
+				378B4F7EE2E5A61D47E0C520 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		50B25CF7EBF743790475DC59 /* Build configuration list for PBXProject "Resumectl" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA19D43435E192C55D8FF6B1 /* Debug */,
+				11CDD9D395BBCF3E0AEF1EB2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9E38068FCB1205EC86ED99A9 /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72575CB7235613727C0A1438 /* Debug */,
+				3E161AA93628FC1F97301DFC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B9EDAC830C38ACE7703CB4A4 /* Project object */;
+}

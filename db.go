@@ -105,6 +105,38 @@ func contentHash(content string) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(content)))[:12]
 }
 
+func FindJobByQuery(query string) (*Job, error) {
+	row := db.QueryRow(`
+		SELECT id, url, company, title, score, status, created_at, updated_at
+		FROM jobs
+		WHERE url = ? OR LOWER(company) LIKE '%' || LOWER(?) || '%' OR LOWER(title) LIKE '%' || LOWER(?) || '%'
+		ORDER BY created_at DESC LIMIT 1`, query, query, query)
+	var j Job
+	err := row.Scan(&j.ID, &j.URL, &j.Company, &j.Title, &j.Score, &j.Status, &j.CreatedAt, &j.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("no job found matching %q", query)
+	}
+	return &j, err
+}
+
+func UpdateJobStatus(id int, status string) error {
+	validStatuses := map[string]bool{"new": true, "applied": true, "screening": true, "interview": true, "offer": true, "rejected": true, "withdrawn": true}
+	if !validStatuses[status] {
+		return fmt.Errorf("invalid status %q: must be one of new, applied, screening, interview, offer, rejected, withdrawn", status)
+	}
+	now := time.Now()
+	var err error
+	switch status {
+	case "applied":
+		_, err = db.Exec(`UPDATE jobs SET status=?, applied_at=?, updated_at=? WHERE id=?`, status, now, now, id)
+	case "rejected":
+		_, err = db.Exec(`UPDATE jobs SET status=?, rejected_at=?, updated_at=? WHERE id=?`, status, now, now, id)
+	default:
+		_, err = db.Exec(`UPDATE jobs SET status=?, updated_at=? WHERE id=?`, status, now, id)
+	}
+	return err
+}
+
 func ListJobs(status string, minScore int) ([]Job, error) {
 	query := "SELECT id, url, company, title, score, status, created_at, updated_at FROM jobs WHERE 1=1"
 	args := []interface{}{}
