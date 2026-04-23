@@ -120,6 +120,9 @@ func runMatch(cmd *cobra.Command, args []string) {
 			fmt.Fprintf(os.Stderr, "Error fetching job: %v\n", err)
 			os.Exit(1)
 		}
+		if companyName != "" {
+			job.Company = companyName
+		}
 	} else {
 		fmt.Fprintf(os.Stderr, "Error: must provide either a job URL or --file\n")
 		os.Exit(1)
