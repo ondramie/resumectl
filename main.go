@@ -131,6 +131,17 @@ func main() {
 		},
 	}
 	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(syncCmd)
+
+	var gmailAuthCmd = &cobra.Command{
+		Use:   "gmail-auth",
+		Short: "Authorize Gmail access and print token for storing in secrets",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			runGmailAuth(args)
+		},
+	}
+	rootCmd.AddCommand(gmailAuthCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)

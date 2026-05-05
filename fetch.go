@@ -23,6 +23,7 @@ var atsRoutes = map[string]atsHandler{
 	"jobs.ashbyhq.com":         handleAshby,
 	"ats.rippling.com":         handleRippling,
 	"apply.workable.com":       handleWorkable,
+	"jobs.gem.com":             handleGem,
 }
 
 func handleGreenhouse(u *url.URL, parts []string) (*JobInfo, error) {
@@ -525,6 +526,90 @@ func fetchAshbyJob(company, jobID string) (*JobInfo, error) {
 	}, nil
 }
 
+func handleGem(u *url.URL, parts []string) (*JobInfo, error) {
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("could not parse Gem URL: %s", u.String())
+	}
+	company, jobID := parts[0], parts[1]
+	jobURL := u.String()
+
+	boardContent, err := fetchViaJina("https://jobs.gem.com/" + company)
+	title := ""
+	if err == nil {
+		for _, line := range strings.Split(boardContent, "\n") {
+			if strings.Contains(line, jobID) {
+				if start := strings.Index(line, "["); start != -1 {
+					if end := strings.Index(line[start:], "]"); end != -1 {
+						text := line[start+1 : start+end]
+						if sep := strings.Index(text, " San Francisco"); sep != -1 {
+							title = strings.TrimSpace(text[:sep])
+						} else if sep := strings.Index(text, " •"); sep != -1 {
+							title = strings.TrimSpace(text[:sep])
+						} else {
+							title = strings.TrimSpace(text)
+						}
+					}
+				}
+				break
+			}
+		}
+	}
+
+	jobContent, err := fetchViaJina(jobURL)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch Gem job: %v", err)
+	}
+
+	if idx := strings.Index(jobContent, "Markdown Content:"); idx != -1 {
+		jobContent = strings.TrimSpace(jobContent[idx+len("Markdown Content:"):])
+	}
+
+	if title == "" {
+		title = jobID
+	}
+
+	return &JobInfo{
+		Company:     company,
+		Title:       title,
+		ReqID:       jobID,
+		Description: jobContent,
+	}, nil
+}
+
+func extractJinaTitle(jinaContent string) string {
+	for _, line := range strings.SplitN(jinaContent, "\n", 10) {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "Title:") {
+			return strings.TrimSpace(strings.TrimPrefix(line, "Title:"))
+		}
+	}
+	return ""
+}
+
+func fetchViaJina(pageURL string) (string, error) {
+	req, err := http.NewRequest("GET", "https://r.jina.ai/"+pageURL, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Accept", "text/plain")
+
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("Jina HTTP %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(body)), nil
+}
+
 func fetchGenericJob(jobURL string) (*JobInfo, error) {
 	req, err := http.NewRequest("GET", jobURL, nil)
 	if err != nil {
@@ -596,6 +681,20 @@ func fetchGenericJob(jobURL string) (*JobInfo, error) {
 
 	content = regexp.MustCompile(`\s+`).ReplaceAllString(content, " ")
 	content = strings.TrimSpace(content)
+
+	if len(content) < 200 {
+		fmt.Println("  Page appears JavaScript-rendered, trying Jina reader...")
+		if jinaContent, err := fetchViaJina(jobURL); err == nil && len(jinaContent) > 200 {
+			if t := extractJinaTitle(jinaContent); t != "" {
+				title = t
+			}
+			if idx := strings.Index(jinaContent, "Markdown Content:"); idx != -1 {
+				content = strings.TrimSpace(jinaContent[idx+len("Markdown Content:"):])
+			} else {
+				content = jinaContent
+			}
+		}
+	}
 
 	if len(content) > 15000 {
 		content = content[:15000]
