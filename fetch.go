@@ -244,7 +244,7 @@ func fetchJobDescription(rawURL string) (*JobInfo, error) {
 			candidates = append(candidates, stripped)
 		}
 		for _, c := range candidates {
-			if job, err := fetchAshbyJob(c, ashbyJID); err == nil {
+			if job, err := fetchAshbyJob(c, ashbyJID); err == nil && len(job.Description) > 200 {
 				return job, nil
 			}
 		}
@@ -495,35 +495,26 @@ func fetchAshbyJob(company, jobID string) (*JobInfo, error) {
 	}
 
 	pageURL := fmt.Sprintf("https://jobs.ashbyhq.com/%s/%s", company, jobID)
-	resp, err = http.Get(pageURL)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Ashby page error: HTTP %d", resp.StatusCode)
-	}
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	title := doc.Find("title").First().Text()
-	title = strings.TrimSpace(title)
-
-	description, _ := doc.Find(`meta[name="description"]`).Attr("content")
-	if description == "" {
-		return nil, fmt.Errorf("could not extract job description from Ashby page")
+	if jinaContent, err := fetchViaJina(pageURL); err == nil {
+		title := extractJinaTitle(jinaContent)
+		content := jinaContent
+		if idx := strings.Index(jinaContent, "Markdown Content:"); idx != -1 {
+			content = strings.TrimSpace(jinaContent[idx+len("Markdown Content:"):])
+		}
+		if len(content) > 200 {
+			if title == "" {
+				title = jobID
+			}
+			return &JobInfo{
+				Company:     company,
+				Title:       title,
+				ReqID:       jobID,
+				Description: content,
+			}, nil
+		}
 	}
 
-	return &JobInfo{
-		Company:     company,
-		Title:       title,
-		ReqID:       jobID,
-		Description: description,
-	}, nil
+	return nil, fmt.Errorf("could not extract job description from Ashby page for %s/%s", company, jobID)
 }
 
 func handleGem(u *url.URL, parts []string) (*JobInfo, error) {
