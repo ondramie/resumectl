@@ -31,14 +31,14 @@ func selectBestTemplate(job *JobInfo) string {
 		if err != nil {
 			continue
 		}
-		score, err := quickScore(string(resume), job.Description, job.Company)
+		label := templateLabel(t)
+		score, err := scoreTemplate(string(resume), job.Title, job.Description, label)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "  Warning: could not score %s: %v\n", t, err)
 			continue
 		}
-		label := filepath.Base(t)
-		fmt.Printf("  %s: %s\n", label, color.CyanString("%d/100", score))
-		results = append(results, scoredTemplate{t, score})
+		fmt.Printf("  %s: %s\n", filepath.Base(t), color.CyanString("%d/100", score))
+		results = append(results, scoredTemplate{t, label, score})
 	}
 
 	if len(results) == 0 {
@@ -59,7 +59,7 @@ func selectBestTemplate(job *JobInfo) string {
 
 	if tied {
 		fmt.Printf("  %s Tie detected, comparing directly...\n", color.YellowString("⚠"))
-		winner, err := compareTemplates(results, job.Description)
+		winner, err := compareTemplates(results, job.Title, job.Description)
 		if err == nil {
 			best = winner
 		}

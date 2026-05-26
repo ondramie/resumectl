@@ -262,11 +262,12 @@ func selectBestTemplateFromList(templates []string, job *JobInfo) string {
 		if err != nil {
 			continue
 		}
-		score, err := quickScore(string(resume), job.Description, job.Company)
+		label := templateLabel(t)
+		score, err := scoreTemplate(string(resume), job.Title, job.Description, label)
 		if err != nil {
 			continue
 		}
-		results = append(results, scoredTemplate{t, score})
+		results = append(results, scoredTemplate{t, label, score})
 	}
 
 	if len(results) == 0 {
@@ -285,7 +286,7 @@ func selectBestTemplateFromList(templates []string, job *JobInfo) string {
 	}
 
 	if tied {
-		winner, err := compareTemplates(results, job.Description)
+		winner, err := compareTemplates(results, job.Title, job.Description)
 		if err == nil {
 			best = winner
 		}

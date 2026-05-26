@@ -55,7 +55,7 @@ func main() {
 		Args:  cobra.MaximumNArgs(1),
 		Run:   runMatch,
 	}
-	matchCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.tex", "Path to resume LaTeX file")
+	matchCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.data-platform.tex", "Path to resume LaTeX file")
 	matchCmd.Flags().StringVarP(&jobFile, "file", "f", "", "Path to job description text file (instead of URL)")
 	matchCmd.Flags().StringVarP(&companyName, "company", "c", "", "Override company name")
 	matchCmd.Flags().IntVarP(&maxIterations, "iterations", "i", 3, "Max iterations to improve score")
@@ -81,8 +81,17 @@ func main() {
 	}
 	rootCmd.AddCommand(pdfCmd)
 
-	scanCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.tex", "Path to resume LaTeX file")
+	scanCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.data-platform.tex", "Path to resume LaTeX file")
 	rootCmd.AddCommand(scanCmd)
+
+	var prepCmd = &cobra.Command{
+		Use:   "prep <url|company>",
+		Short: "Generate an interview prep document for a job posting",
+		Args:  cobra.ExactArgs(1),
+		Run:   runPrep,
+	}
+	prepCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.data-platform.tex", "Path to resume LaTeX file")
+	rootCmd.AddCommand(prepCmd)
 
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
