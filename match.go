@@ -329,6 +329,7 @@ Instructions:
 4. Create a tailored LaTeX resume that:
    - CRITICAL: Reorder bullet points to mirror the job description's priority. The first requirement in the job description should be addressed by the first bullet point in each relevant role. Match the job's emphasis order exactly.
    - Reorder rows in the Technical section so the most relevant category appears first
+   - CRITICAL: Filter individual technologies within each Technical section row — REMOVE any technology or tool that is NOT mentioned in the job description and NOT directly implied by the job requirements. The goal is a lean Technical section containing only what is relevant to this specific role. For example, if the job does not use Go, remove Go from Languages. If the job does not use Flink, remove Flink from Data Systems. If a row becomes empty after filtering, omit the entire row.
    - Does NOT add false information — NEVER add technologies, tools, frameworks, or skills that are not already in the original resume
    - Does NOT rewrite bullet points to mention technologies the candidate did not list
    - Keeps exact same LaTeX structure
