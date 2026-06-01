@@ -11,14 +11,25 @@ import (
 )
 
 func runPdf(cmd *cobra.Command, args []string) {
-	dir := args[0]
+	input := args[0]
 
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		fmt.Fprintf(os.Stderr, "Error: directory %s does not exist\n", dir)
+	if _, err := os.Stat(input); os.IsNotExist(err) {
+		fmt.Fprintf(os.Stderr, "Error: %s does not exist\n", input)
 		os.Exit(1)
 	}
 
-	resumeTexPath := filepath.Join(dir, "resume.tex")
+	var dir string
+	var texFile string
+
+	if filepath.Ext(input) == ".tex" {
+		dir = filepath.Dir(input)
+		texFile = filepath.Base(input)
+	} else {
+		dir = input
+		texFile = "resume.tex"
+	}
+
+	resumeTexPath := filepath.Join(dir, texFile)
 	if _, err := os.Stat(resumeTexPath); os.IsNotExist(err) {
 		fmt.Fprintf(os.Stderr, "Error: %s does not exist\n", resumeTexPath)
 		os.Exit(1)
@@ -35,7 +46,7 @@ func runPdf(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Printf("Compiling %s...\n", resumeTexPath)
-	execCmd := exec.Command("tectonic", "resume.tex")
+	execCmd := exec.Command("tectonic", texFile)
 	execCmd.Dir = dir
 	execCmd.Stdout = os.Stdout
 	execCmd.Stderr = os.Stderr
@@ -45,5 +56,6 @@ func runPdf(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("%s PDF compiled: %s/resume.pdf\n", color.GreenString("✓"), dir)
+	pdfName := texFile[:len(texFile)-len(filepath.Ext(texFile))] + ".pdf"
+	fmt.Printf("%s PDF compiled: %s/%s\n", color.GreenString("✓"), dir, pdfName)
 }
