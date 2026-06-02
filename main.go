@@ -93,6 +93,15 @@ func main() {
 	prepCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.data-platform.tex", "Path to resume LaTeX file")
 	rootCmd.AddCommand(prepCmd)
 
+	var whyCmd = &cobra.Command{
+		Use:   "why <company|id>",
+		Short: "Generate a 'Why do you want to join X?' answer for a job application",
+		Args:  cobra.ExactArgs(1),
+		Run:   runWhy,
+	}
+	whyCmd.Flags().StringVarP(&resumePath, "resume", "r", "resume.template.data-platform.tex", "Path to resume LaTeX file")
+	rootCmd.AddCommand(whyCmd)
+
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
 		Short: "Start HTTP server for remote resume matching",
