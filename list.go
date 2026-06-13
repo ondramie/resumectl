@@ -10,6 +10,7 @@ import (
 )
 
 func runList(cmd *cobra.Command, args []string) {
+	ensureRegistered()
 	if err := InitDB(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error initializing database: %v\n", err)
 		os.Exit(1)

@@ -14,6 +14,7 @@ import (
 )
 
 func runPrep(cmd *cobra.Command, args []string) {
+	ensureRegistered()
 	query := args[0]
 
 	var job *JobInfo

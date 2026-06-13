@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var serveToken string
 var servePort int
 
 func runServe(cmd *cobra.Command, args []string) {
@@ -22,15 +21,8 @@ func runServe(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if serveToken == "" {
-		serveToken = os.Getenv("RESUMECTL_API_TOKEN")
-	}
-	if serveToken == "" {
-		fmt.Fprintf(os.Stderr, "Error: --token flag or RESUMECTL_API_TOKEN env var required\n")
-		os.Exit(1)
-	}
-
 	mux := http.NewServeMux()
+	mux.HandleFunc("/register", handleRegister)
 	mux.HandleFunc("/match", authMiddleware(handleMatch))
 	mux.HandleFunc("/pipeline", authMiddleware(handlePipeline))
 	mux.HandleFunc("/pdf/", authMiddleware(handlePDFDownload))
@@ -47,10 +39,17 @@ func runServe(cmd *cobra.Command, args []string) {
 func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
-		if !strings.HasPrefix(auth, "Bearer ") || strings.TrimPrefix(auth, "Bearer ") != serveToken {
+		if !strings.HasPrefix(auth, "Bearer ") {
 			http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
 			return
 		}
+		token := strings.TrimPrefix(auth, "Bearer ")
+		user, err := UserFromToken(token)
+		if err != nil {
+			http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+			return
+		}
+		r.Header.Set("X-User-ID", user.ID)
 		next(w, r)
 	}
 }

@@ -108,7 +108,6 @@ func main() {
 		Run:   runServe,
 	}
 	serveCmd.Flags().IntVar(&servePort, "port", 8080, "Port to listen on")
-	serveCmd.Flags().StringVar(&serveToken, "token", "", "Bearer token for auth (or API_TOKEN env var)")
 	rootCmd.AddCommand(serveCmd)
 
 	var pipelineCmd = &cobra.Command{
@@ -124,6 +123,7 @@ func main() {
 		Short: "Update a job's status (applied, screening, interview, offer, rejected, withdrawn)",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
+			ensureRegistered()
 			if err := InitDB(); err != nil {
 				fmt.Fprintf(os.Stderr, "error: %v\n", err)
 				os.Exit(1)

@@ -70,6 +70,7 @@ func selectBestTemplate(job *JobInfo) string {
 }
 
 func runMatch(cmd *cobra.Command, args []string) {
+	ensureRegistered()
 	if err := InitDB(); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not init database: %v\n", err)
 	}

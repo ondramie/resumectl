@@ -13,6 +13,7 @@ import (
 )
 
 func runWhy(_ *cobra.Command, args []string) {
+	ensureRegistered()
 	query := args[0]
 
 	if err := InitDB(); err != nil {

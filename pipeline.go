@@ -10,6 +10,7 @@ import (
 )
 
 func runPipeline(cmd *cobra.Command, args []string) {
+	ensureRegistered()
 	if err := InitDB(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: could not init database: %v\n", err)
 		os.Exit(1)
